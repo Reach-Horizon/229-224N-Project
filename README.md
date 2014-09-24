@@ -12,4 +12,11 @@ Some preliminary notes for project ideas:
 	* Twitter data 
 	* proliferation of social networks
 	* recognize social movements
+* Use OpenEdx data (forum posts, questions)
 * Global context for determining word similarity distributions
+
+
+* Identifying internet trolls--through analysis of posts	
+
+* Identifying possible topics of interest--tagging posts
+* detecting similarity across posts
