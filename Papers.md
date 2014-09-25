@@ -27,6 +27,5 @@
 			used in translation systems and are of direct use in building
 			modern translation systems
 * Parameter Estimation with Fully Observed Data
-	* don't know underlying alignment for each training example
 
 * http://www.socher.org/index.php/Main/ImprovingWordRepresentationsViaGlobalContextAndMultipleWordPrototypes
