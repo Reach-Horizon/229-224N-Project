@@ -1,6 +1,7 @@
 # Relevant Papers
 
 ## Statistical Machine Translation: IBM Models 1 and 2
+
 	* language model for probability of an english sentence
 	* translation model for conditional probability of a french/english pair 
 	* Alignments
