@@ -21,3 +21,13 @@
   * POS tag sentences keeping keywords but preserving other words, transforming each sentence into a database tuple
 * Answer Detection
   * develop a graph of related answers using * KL-divergence language model *
+
+## An Intelligent Discussion-Bot for Answering Student Queries in Threaded Discussions (Feng et al.)
+
+* TextTiling NLP tool to segment every document into semanticaly-related tiles and hence process tile units; 
+* http://people.ischool.berkeley.edu/~hearst/research/tiling.html
+* Student question -> Feature Extraction -> Student Interest Matching -> Supplemental Course Documents and Archived Threaded Discussions -> Answer Generation -> Reply Posted to DB
+* human judge manually deems quality of an answer provided, based on a number of categories
+
+## Extracting Chatbot Knowledge from Online Discussion Forums (Huang et al.)
+
