@@ -9,7 +9,7 @@
 
 * semantic representations of words (through word vectors) to determine relatedness of terms
 
-## Finding Question-Answer Pairs from Online Forums-- Cong et al.
+## Finding Question-Answer Pairs from Online Forums (Cong et al.)
 
 * employ method of detecting question-answer pairs for a given question posted and subsequent responses given
 * Question detection to automatically be able to detect questions in forums
