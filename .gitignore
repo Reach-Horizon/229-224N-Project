@@ -1,2 +1,7 @@
 # File Types to Ignore
 *.o
+*.pyc
+*~
+*#
+.idea/
+dataset/

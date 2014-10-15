@@ -1,4 +1,4 @@
-import os, codecs, pprint
+import os, codecs, pprint, csv
 from itertools import islice
 
 class Tag(object):
@@ -10,14 +10,10 @@ class Example(object):
     self.data = data
 
   @classmethod
-  def from_raw_text(cls, raw, fields):
+  def from_csv_entries(cls, csv_entries, fields):
     data = {}
-    print raw
-    terms = raw.strip('"').split('","')
-    print terms
-    print fields
     for idx, f in enumerate(fields):
-      data[f] = terms[idx]
+      data[f] = csv_entries[idx]
     return Example(data)
 
   def __str__(self):
@@ -28,24 +24,11 @@ class DataStreamer(object):
   @classmethod
   def load_from_file(cls, fname):
     with codecs.open(fname, 'rb', encoding='ascii', errors='ignore') as f:
-      cache = []
-      for line in islice(f, 0, 1): # read the first line to get fields
-        fields = line.strip("\r\n").split('","')
+      csv_f = csv.reader(f)
+      fields = csv_f.next()
 
-      for line in islice(f, 0, None): # read from the second line to the end
-        if line.replace("\n", "").strip():
-          cache += [line.strip("\n")]
-        elif cache:
-          example = Example.from_raw_text("\n".join(cache), fields)
-          cache = []
+      for line in csv_f:
+          example = Example.from_csv_entries(line, fields)
           yield example
 
-if __name__ == '__main__':
-  fname = 'Train.csv'
-  total = 1
-  i = 0
-  for example in DataStreamer.load_from_file(fname):
-    print example
-    i = i + 1
-    if i == total:
-      break
+
