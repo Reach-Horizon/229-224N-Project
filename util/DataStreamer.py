@@ -1,5 +1,4 @@
-import os, codecs, pprint, csv
-from itertools import islice
+import codecs, pprint, csv
 
 class Tag(object):
   def __init__(self):
@@ -13,7 +12,8 @@ class Example(object):
   def from_csv_entries(cls, csv_entries, fields):
     data = {}
     for idx, f in enumerate(fields):
-      data[f] = csv_entries[idx]
+      data[f.lower()] = csv_entries[idx]
+    data['tags'] = data['tags'].split()
     return Example(data)
 
   def __str__(self):
