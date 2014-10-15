@@ -31,3 +31,22 @@
 
 ## Extracting Chatbot Knowledge from Online Discussion Forums (Huang et al.)
 
+* detect direct reply to first post in thread
+* use a cascaded model:
+  * apply SVM classifier to candidate RR to identify RR (direct reply) of a thread
+  * filter out noneligible RR
+  * identifying RR seen as a binary classification problem
+  * features used listed in paper
+ 
+## Extracting Chatbot Knowledge from Online Discussion Forums
+
+* divide responses into text tiles
+* cluster into topics
+* sentential segments taken from each cluster to form summary
+* LIBSVM, SVMLiTE
+
+## Bridging the Lexical Chasm: Statistical Approaches to Answer Finding
+
+* MT model to question-answer finding
+* source = answers, target = questions
+* translation model learns how answer-words translate to question words, bridging lexical chasm
