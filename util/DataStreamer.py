@@ -1,12 +1,27 @@
 import codecs, pprint, csv
 
-class Tag(object):
-  def __init__(self):
-    pass
-
 class Example(object):
+
+  all_tags = set()
+
   def __init__(self, data):
     self.data = data
+
+  @classmethod
+  def extract_code_sections(cls, mixed):
+    # we avoid re because it is slow
+    code = []
+    noncode = []
+    begins = mixed.split('<pre>')
+    for match in begins:
+      ends = match.split('</pre>')
+      if len(ends) == 1:
+        # this was the beginning before the first <pre>
+        noncode += [ends[0]]
+      else:
+        code += [ends[0]]
+        noncode += [ends[1]]
+    return code, noncode
 
   @classmethod
   def from_csv_entries(cls, csv_entries, fields):
@@ -14,6 +29,14 @@ class Example(object):
     for idx, f in enumerate(fields):
       data[f.lower()] = csv_entries[idx]
     data['tags'] = data['tags'].split()
+
+    cls.all_tags = cls.all_tags.union(set(data['tags']))
+
+    code, noncode = cls.extract_code_sections(data['body'])
+
+    data['body'] = noncode
+    data['code'] = code
+
     return Example(data)
 
   def __str__(self):
