@@ -1,14 +1,27 @@
 import codecs, pprint, csv
 
 class Example(object):
+  """
+  An object representing a question and its tags
+  """
 
+  # this is a class variable
   all_tags = set()
 
   def __init__(self, data):
+    """
+    constructor
+    """
+    # this is a instance method
+    # data is a instance variable
     self.data = data
 
   @classmethod
   def extract_code_sections(cls, mixed):
+    """
+    splits a mixed text into a list of noncode sections and a list of code sections
+    """
+    # A class method is particular to its class (it can view class/static methods/variables)
     # we avoid re because it is slow
     code = []
     noncode = []
@@ -25,6 +38,10 @@ class Example(object):
 
   @classmethod
   def from_csv_entries(cls, csv_entries, fields):
+    """
+    returns an Example object corresponding to the csv_entries
+    """
+
     data = {}
     for idx, f in enumerate(fields):
       data[f.lower()] = csv_entries[idx]
@@ -40,12 +57,21 @@ class Example(object):
     return Example(data)
 
   def __str__(self):
+    """
+    overrides the str representation of this object
+    """
     return pprint.pformat(self.data)
 
 class DataStreamer(object):
+  """
+  a library for parsing data files
+  """
 
   @classmethod
   def load_from_file(cls, fname):
+    """
+    returns a generator over the Examples present in the file
+    """
     with codecs.open(fname, 'rb', encoding='ascii', errors='ignore') as f:
       csv_f = csv.reader(f)
       fields = csv_f.next()
