@@ -1,4 +1,5 @@
 import codecs, pprint, csv
+from collections import Counter
 
 class Example(object):
   """
@@ -6,7 +7,7 @@ class Example(object):
   """
 
   # this is a class variable
-  all_tags = set()
+  all_tags = Counter()
 
   def __init__(self, data):
     """
@@ -47,7 +48,7 @@ class Example(object):
       data[f.lower()] = csv_entries[idx]
     data['tags'] = data['tags'].split()
 
-    cls.all_tags = cls.all_tags.union(set(data['tags']))
+    cls.all_tags += Counter(data['tags'])
 
     code, noncode = cls.extract_code_sections(data['body'])
 
