@@ -9,7 +9,7 @@ with posts that have one of the 1000 most frequent tags.
 TODO: FIX A LOT OF DIRECTORY MIGRATING WITHIN SCRIPT.
 """
 
-numTags = 2
+numTags = 1000
 
 """Get the 1000 most frequent tags across all posts."""
 def findMostFrequentTags(dataFile):
@@ -28,7 +28,7 @@ def findMostFrequentTags(dataFile):
 	for tag in mostFreqTags:
 		cleanTags.append(tag[0])
 
-	os.chdir('util/')
+	
 	#Serialize tags into a pickle file
 	with open('mostFreqTags.pkl','wb') as f:
 		cPickle.dump(cleanTags,f)
@@ -39,20 +39,19 @@ def findSubSamplePosts(tagsPickle, dataFile):
 	pickle = open(tagsPickle,'rb')
 	mostFreqTags = cPickle.load(pickle)
 	subSamplePosts = []
-	os.chdir("..")
 	for example in DataStreamer.load_from_file(dataFile):
 		dataTags = example.data['tags']
 		for tag in dataTags:
 			if tag in mostFreqTags:
 				subSamplePosts.append(example.data)
 				break
-	os.chdir('util')
+	
 	#Serialize posts into a pickle file
 	with open('subSamplePosts.pkl','wb') as f:
 		cPickle.dump(subSamplePosts,f)
 
 if __name__ == "__main__":
-	dirPath = os.chdir("..")
-	dataFile = "sample_data/sample.csv"
+	#dataFile = "sample_data/sample.csv"
+	dataFile = "/home/meric/Documents/CS224N/229-224N-Project/sample_data/sample.csv"
 	findMostFrequentTags(dataFile)
-	findSubSamplePosts('mostFreqTags.pkl', dataFile)
+	#findSubSamplePosts('mostFreqTags.pkl', dataFile)
