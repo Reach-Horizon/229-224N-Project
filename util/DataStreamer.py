@@ -44,7 +44,6 @@ class Example(object):
     for idx, f in enumerate(fields):
       data[f.lower()] = csv_entries[idx]
     data['tags'] = data['tags'].split()
-    print ','.join(data['tags'])
 
     # don't do this automatically because it is very slow
     #code, noncode = cls.extract_code_sections(data['body'])

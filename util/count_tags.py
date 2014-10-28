@@ -10,7 +10,7 @@ tags = tags.split(",")
 counts = Counter(tags)
 
 import cPickle as pickle
-with open('tags.count', 'wb') as f:
+with open('../full_data/tags.count', 'wb') as f:
     pickle.dump(counts, f)
 
 

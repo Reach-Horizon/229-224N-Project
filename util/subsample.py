@@ -2,56 +2,27 @@
 from DataStreamer import DataStreamer, Example
 from collections import Counter
 import os
-import cPickle
+import cPickle as pickle
+
 
 """Module for subsampling the data so that we only concern ourselves
 with posts that have one of the 1000 most frequent tags.
 TODO: FIX A LOT OF DIRECTORY MIGRATING WITHIN SCRIPT.
 """
 
-numTags = 1000
+with open('../full_data/tags.count', 'rb') as f:
+    counts = pickle.load(f)
 
-"""Get the 1000 most frequent tags across all posts."""
-def findMostFrequentTags(dataFile):
-	tagsFrequency = Counter()
-	for example in DataStreamer.load_from_file(dataFile):
-		data = example.data
-		tags = data['tags']
-		for tag in tags:
-			tagsFrequency[tag]+=1
+most_common = set([tag for tag, count in counts.most_common(1000)])
 
-	#Stores numTags most freq tags with frequency
-	mostFreqTags = tagsFrequency.most_common(numTags)
-	cleanTags =[]
+i=0
+with open('subsample.examples.pickle', 'wb') as f:
+    for example in DataStreamer.load_from_file('../full_data/Train.csv'):
+        if i%10000 == 0:
+            print 'processed', i, 'examples'
+        tags = example.data['tags']
+        if set(tags).intersection(most_common):
+            # match
+            pickle.dump(example, f, protocol=pickle.HIGHEST_PROTOCOL)
+        i += 1
 
-	#Store only tags in a list
-	for tag in mostFreqTags:
-		cleanTags.append(tag[0])
-
-	
-	#Serialize tags into a pickle file
-	with open('mostFreqTags.pkl','wb') as f:
-		cPickle.dump(cleanTags,f)
-
-"""Get the posts that contain at least one of the most
-frequent tags."""
-def findSubSamplePosts(tagsPickle, dataFile):
-	pickle = open(tagsPickle,'rb')
-	mostFreqTags = cPickle.load(pickle)
-	subSamplePosts = []
-	for example in DataStreamer.load_from_file(dataFile):
-		dataTags = example.data['tags']
-		for tag in dataTags:
-			if tag in mostFreqTags:
-				subSamplePosts.append(example.data)
-				break
-	
-	#Serialize posts into a pickle file
-	with open('subSamplePosts.pkl','wb') as f:
-		cPickle.dump(subSamplePosts,f)
-
-if __name__ == "__main__":
-	#dataFile = "sample_data/sample.csv"
-	dataFile = "/home/meric/Documents/CS224N/229-224N-Project/sample_data/sample.csv"
-	findMostFrequentTags(dataFile)
-	#findSubSamplePosts('mostFreqTags.pkl', dataFile)
