@@ -7,4 +7,4 @@
 dataset/
 full_data/
 sample_data/
-
+*.pickle

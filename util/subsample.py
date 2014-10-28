@@ -13,7 +13,11 @@ TODO: FIX A LOT OF DIRECTORY MIGRATING WITHIN SCRIPT.
 with open('../full_data/tags.count', 'rb') as f:
     counts = pickle.load(f)
 
-most_common = set([tag for tag, count in counts.most_common(1000)])
+keep_n = 1000
+
+most_common = counts.most_common(keep_n)
+
+most_common_tags = [tag for tag, count in most_common]
 
 i=0
 j=0
@@ -22,8 +26,10 @@ with open('subsample.examples.pickle', 'wb') as f:
         if i%10000 == 0:
             print 'processed', i, 'dumped', j
         tags = example.data['tags']
-        if set(tags).intersection(most_common):
+        matching = set(tags).intersection(most_common_tags)
+        if len(matching):
             # match
+            example.data['tags'] = list(matching)
             pickle.dump(example, f, protocol=pickle.HIGHEST_PROTOCOL)
             j += 1
         i += 1
