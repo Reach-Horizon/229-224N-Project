@@ -6,9 +6,6 @@ class Example(object):
   An object representing a question and its tags
   """
 
-  # this is a class variable
-  all_tags = Counter()
-
   def __init__(self, data):
     """
     constructor
@@ -47,13 +44,13 @@ class Example(object):
     for idx, f in enumerate(fields):
       data[f.lower()] = csv_entries[idx]
     data['tags'] = data['tags'].split()
+    print ','.join(data['tags'])
 
-    cls.all_tags += Counter(data['tags'])
+    # don't do this automatically because it is very slow
+    #code, noncode = cls.extract_code_sections(data['body'])
 
-    code, noncode = cls.extract_code_sections(data['body'])
-
-    data['body'] = noncode
-    data['code'] = code
+    #data['body'] = noncode
+    #data['code'] = code
 
     return Example(data)
 
