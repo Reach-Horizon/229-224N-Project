@@ -16,13 +16,17 @@ with open('../full_data/tags.count', 'rb') as f:
 most_common = set([tag for tag, count in counts.most_common(1000)])
 
 i=0
+j=0
 with open('subsample.examples.pickle', 'wb') as f:
     for example in DataStreamer.load_from_file('../full_data/Train.csv'):
         if i%10000 == 0:
-            print 'processed', i, 'examples'
+            print 'processed', i, 'dumped', j
         tags = example.data['tags']
         if set(tags).intersection(most_common):
             # match
             pickle.dump(example, f, protocol=pickle.HIGHEST_PROTOCOL)
+            j += 1
         i += 1
 
+print 'processed', i, 'dumped', j
+    
