@@ -1,4 +1,4 @@
-import codecs, pprint, csv
+import codecs, pprint, csv, json, bz2
 from collections import Counter
 
 class Example(object):
@@ -13,6 +13,13 @@ class Example(object):
     # this is a instance method
     # data is a instance variable
     self.data = data
+
+  def to_json(self):
+    return json.dumps(self.data)
+
+  @classmethod
+  def from_json(cls, json_str):
+    return cls.__init__(json.loads(json_str))
 
   @classmethod
   def extract_code_sections(cls, mixed):
@@ -63,6 +70,13 @@ class DataStreamer(object):
   """
   a library for parsing data files
   """
+
+  @classmethod
+  def load_from_bz2(cls, fname):
+    infile = bz2.BZ2File(fname, 'rb', compresslevel=9)
+    for line in infile:
+        yield Example.from_json(line.strip("\n"))
+    infile.close()
 
   @classmethod
   def load_from_file(cls, fname):
