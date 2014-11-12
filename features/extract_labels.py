@@ -41,8 +41,7 @@ for i, labels in enumerate(read_labels):
 Y = csr_matrix(Y) # make it sparse to save space
 
 outfile = bz2.BZ2File(args.out_file + '.labels.bz2', 'wb', compresslevel=9)
-for label in keys:
-  outfile.write(label + "\n")
+json.dump(all_labels, outfile)
 outfile.close()
 
 from common import save_sparse_csr
