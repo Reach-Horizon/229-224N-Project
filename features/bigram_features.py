@@ -8,6 +8,7 @@ raw_text = '../full_data/subsampled.bz2'
 i = 0
 
 all_vocab = set()
+all_labels = set()
 
 example_idx = 0
 for example in DataStreamer.load_from_bz2(raw_text):
@@ -17,6 +18,7 @@ for example in DataStreamer.load_from_bz2(raw_text):
   this_vocab = set(vectorizer.vocabulary_.keys())
 
   all_vocab = all_vocab.union(this_vocab)
+  all_labels = all_labels.union(example.data['tags'])
 
   example_idx += 1
   if example_idx % 1000 == 0:
@@ -26,6 +28,12 @@ keys = list(all_vocab)
 values = range(len(keys))
 all_vocab = dict(zip(keys, values))
 
-with open('vocab.json') as f:
+with open('all_vocab.json') as f:
   json.dump(all_vocab, f)
 
+keys = list(all_labels)
+values = range(len(keys))
+all_labels = dict(zip(keys, values))
+
+with open('all_labels.json') as f:
+  json.dump(all_labels, f)
