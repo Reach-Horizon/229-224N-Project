@@ -34,7 +34,6 @@ def extract_code_sections(mixed, lower=True):
 i = 0
 
 all_vocab = set()
-all_labels = set()
 
 example_idx = 0
 documents = []
@@ -46,7 +45,6 @@ for example in DataStreamer.load_from_bz2(raw_text):
   if example_idx % 10000 == 0:
     print 'read', example_idx, 'examples'
 
-  all_labels = all_labels.union(example.data['tags'])
   try:
     code, noncode = extract_code_sections(example.data['body'], lower=True)
   except Exception as e:
