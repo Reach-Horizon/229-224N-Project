@@ -5,7 +5,6 @@ from sklearn.feature_extraction.text import HashingVectorizer
 from bs4 import BeautifulSoup
 import numpy as np
 
-
 num_labels = '100'
 raw_text = '../full_data/subsampled.'+num_labels+'.bz2'
 
@@ -37,7 +36,7 @@ all_vocab = set()
 
 example_idx = 0
 documents = []
-num_examples = 2000000
+num_examples = 50
 
 for example in DataStreamer.load_from_bz2(raw_text):
   if example_idx >= num_examples:
@@ -59,6 +58,8 @@ for example in DataStreamer.load_from_bz2(raw_text):
 vectorizer = HashingVectorizer(ngram_range=(1,2), binary = True, stop_words='english')
 X = vectorizer.fit_transform(documents)
 
-np.save('bigram.' + str(example_idx) + '.X', X)
+from common import save_sparse_csr
+
+save_sparse_csr('bigram.' + str(example_idx) + '.X', X)
 
 

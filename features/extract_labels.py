@@ -2,6 +2,7 @@ import sys, json
 sys.path.append('../')
 from util.DataStreamer import DataStreamer, Example
 import numpy as np
+from scipy.sparse import csr_matrix
 
 
 num_labels = '100'
@@ -34,9 +35,13 @@ for i, labels in enumerate(read_labels):
     j = all_labels[label]
     Y[i,j] = 1
 
+Y = csr_matrix(Y) # make it sparse to save space
+
 with open(str(example_idx) + '.Y.all.labels.json', 'wb') as f:
   json.dump(all_labels, f)
 
-np.save(str(example_idx) + '.Y', Y)
+from common import save_sparse_csr
+
+save_sparse_csr(str(example_idx) + '.Y', Y)
 
 
