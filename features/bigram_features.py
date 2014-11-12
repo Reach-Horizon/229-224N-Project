@@ -1,10 +1,34 @@
 import sys, json
 sys.path.append('../')
 from util.DataStreamer import DataStreamer, Example
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import HashingVectorizer
+from bs4 import BeautifulSoup
+
 
 num_labels = '100'
 raw_text = '../full_data/subsampled.'+num_labels+'.bz2'
+
+def extract_code_sections(mixed, lower=True):
+  """
+  splits a mixed text into a list of noncode sections and a list of code sections
+  """
+  noncode = mixed
+
+  soup = BeautifulSoup(mixed)
+  code = []
+  for e in soup.find_all('pre'):
+    if e.text:
+      code += [e.text]
+    noncode = noncode.replace(str(e), '')
+
+  noncode = BeautifulSoup(noncode).text
+
+  if lower:
+    code = [c.lower() for c in code if c]
+    noncode = noncode.lower()
+
+  return code, noncode
+
 
 i = 0
 
@@ -12,29 +36,23 @@ all_vocab = set()
 all_labels = set()
 
 example_idx = 0
+documents = []
+num_examples = 10000
+
 for example in DataStreamer.load_from_bz2(raw_text):
-
-  vectorizer = CountVectorizer(ngram_range=(1,2), binary = True)
-  X = vectorizer.fit_transform([example.data['body']])
-  this_vocab = set(vectorizer.vocabulary_.keys())
-
-  all_vocab = all_vocab.union(this_vocab)
-  all_labels = all_labels.union(example.data['tags'])
-
+  if example_idx >= num_examples:
+    break
   example_idx += 1
-  if example_idx % 1000 == 0:
-    print len(all_vocab), 'vocab words after', example_idx, 'examples'
 
-keys = list(all_vocab)
-values = range(len(keys))
-all_vocab = dict(zip(keys, values))
+  all_labels = all_labels.union(example.data['tags'])
+  code, noncode = extract_code_sections(example.data['body'], lower=True)
 
-with open('all_vocab.'+num_labels+'.json') as f:
-  json.dump(all_vocab, f)
+  if not noncode:
+    continue
+  documents += [noncode]
 
-keys = list(all_labels)
-values = range(len(keys))
-all_labels = dict(zip(keys, values))
+vectorizer = HashingVectorizer(ngram_range=(1,2), binary = True, stop_words='english')
+X = vectorizer.fit_transform(documents)
+print X.shape
 
-with open('all_labels.'+num_labels+'.json') as f:
-  json.dump(all_labels, f)
+
