@@ -1,4 +1,4 @@
-import sys, json
+import sys, json, bz2
 sys.path.append('../')
 from util.DataStreamer import DataStreamer
 import numpy as np
@@ -40,8 +40,10 @@ for i, labels in enumerate(read_labels):
 
 Y = csr_matrix(Y) # make it sparse to save space
 
-with open(args.out_file + '.labels.json', 'wb') as f:
-  json.dump(all_labels, f)
+outfile = bz2.BZ2File(args.out_file + '.labels.bz2', 'wb', compresslevel=9)
+for label in keys:
+  outfile.write(label + "\n")
+outfile.close()
 
 from common import save_sparse_csr
 

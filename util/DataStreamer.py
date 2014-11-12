@@ -31,12 +31,6 @@ class Example(object):
       data[f.lower()] = csv_entries[idx]
     data['tags'] = data['tags'].split()
 
-    # don't do this automatically because it is very slow
-    #code, noncode = cls.extract_code_sections(data['body'])
-
-    #data['body'] = noncode
-    #data['code'] = code
-
     return Example(data)
 
   def __str__(self):
