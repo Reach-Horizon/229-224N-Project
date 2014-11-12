@@ -42,6 +42,8 @@ num_examples = 10000
 for example in DataStreamer.load_from_bz2(raw_text):
   if example_idx >= num_examples:
     break
+  if example_idx % 1000 == 0:
+    print 'read', example_idx, 'examples'
   example_idx += 1
 
   all_labels = all_labels.union(example.data['tags'])
