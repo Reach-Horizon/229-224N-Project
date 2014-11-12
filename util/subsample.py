@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from DataStreamer import DataStreamer, Example
 from collections import Counter
-import os
+import os, bz2
 import cPickle as pickle
 
 
@@ -33,5 +33,17 @@ with open('subsample.examples.pickle', 'wb') as f:
             j += 1
         i += 1
 
+subsampled_file = bz2.BZ2File('subsampled.bz2', 'wb', compresslevel=9)
+for example in DataStreamer.load_from_file('../full_data/Train.csv'):
+    if i%10000 == 0:
+        print 'processed', i, 'dumped', j
+    tags = example.data['tags']
+    matching = set(tags).intersection(most_common_tags)
+    if len(matching):
+        # match
+        example.data['tags'] = list(matching)
+        subsampled_file.write(example.to_json() + "\n")
+        j += 1
+    i += 1
 print 'processed', i, 'dumped', j
-    
+subsampled_file.close()    
