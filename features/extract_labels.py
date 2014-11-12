@@ -1,8 +1,6 @@
 import sys, json
 sys.path.append('../')
 from util.DataStreamer import DataStreamer, Example
-from sklearn.feature_extraction.text import HashingVectorizer
-from bs4 import BeautifulSoup
 import numpy as np
 
 
@@ -36,6 +34,9 @@ for i, labels in enumerate(read_labels):
     j = all_labels[label]
     Y[i,j] = 1
 
-np.save('bigram.' + str(num_examples) + 'Y', Y)
+with open(str(num_examples) + 'Y.all.labels.txt', 'wb') as f:
+  json.dump(all_labels, f)
+
+np.save(str(num_examples) + 'Y', Y)
 
 
