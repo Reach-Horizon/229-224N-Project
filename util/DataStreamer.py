@@ -35,10 +35,10 @@ class Example(object):
       ends = match.split('</pre>')
       if len(ends) == 1:
         # this was the beginning before the first <pre>
-        noncode += [ends[0]]
+        noncode += [ends[0].replace('<p>', '').replace('</p>', '')]
       else:
         code += [ends[0]]
-        noncode += [ends[1]]
+        noncode += [ends[1].replace('<p>', '').replace('</p>', '')]
     return code, noncode
 
   @classmethod
