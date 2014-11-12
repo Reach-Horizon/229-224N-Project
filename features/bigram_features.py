@@ -3,7 +3,8 @@ sys.path.append('../')
 from util.DataStreamer import DataStreamer, Example
 from sklearn.feature_extraction.text import CountVectorizer
 
-raw_text = '../full_data/subsampled.bz2'
+num_labels = '100'
+raw_text = '../full_data/subsampled.'+num_labels+'.bz2'
 
 i = 0
 
@@ -13,7 +14,7 @@ all_labels = set()
 example_idx = 0
 for example in DataStreamer.load_from_bz2(raw_text):
 
-  vectorizer = CountVectorizer(binary = True)
+  vectorizer = CountVectorizer(ngram_range=(1,2), binary = True)
   X = vectorizer.fit_transform([example.data['body']])
   this_vocab = set(vectorizer.vocabulary_.keys())
 
@@ -28,12 +29,12 @@ keys = list(all_vocab)
 values = range(len(keys))
 all_vocab = dict(zip(keys, values))
 
-with open('all_vocab.json') as f:
+with open('all_vocab.'+num_labels+'.json') as f:
   json.dump(all_vocab, f)
 
 keys = list(all_labels)
 values = range(len(keys))
 all_labels = dict(zip(keys, values))
 
-with open('all_labels.json') as f:
+with open('all_labels.'+num_labels+'.json') as f:
   json.dump(all_labels, f)
