@@ -1,22 +1,25 @@
 import sys, json
 sys.path.append('../')
-from util.DataStreamer import DataStreamer, Example
+from util.DataStreamer import DataStreamer
 import numpy as np
 from scipy.sparse import csr_matrix
 
 
-num_labels = '100'
-raw_text = '../full_data/subsampled.'+num_labels+'.bz2'
+import argparse
+
+parser = argparse.ArgumentParser(description='extract binarized lables from data')
+parser.add_argument('subsampled_bz2', help="the input subsampled bz2 file to read and extract from")
+parser.add_argument('out_file', help="where to dump the extracted labels")
+parser.add_argument('-n', '--num_examples', type=int, help='number of examples to use. Default=2 million', default=2000000)
+args = parser.parse_args()
+
 
 all_labels = set()
-
-example_idx = 0
-num_examples = 2000000
-
 read_labels = []
+example_idx = 0
 
-for example in DataStreamer.load_from_bz2(raw_text):
-  if example_idx >= num_examples:
+for example in DataStreamer.load_from_bz2(args.subsampled_bz2):
+  if example_idx >= args.num_examples:
     break
   if example_idx % 10000 == 0:
     print 'read', example_idx, 'examples'
@@ -29,7 +32,7 @@ keys = list(all_labels)
 values = range(len(keys))
 all_labels = dict(zip(keys, values))
 
-Y = np.zeros((num_examples, len(keys)))
+Y = np.zeros((args.num_examples, len(keys)))
 for i, labels in enumerate(read_labels):
   for label in labels:
     j = all_labels[label]
@@ -37,11 +40,11 @@ for i, labels in enumerate(read_labels):
 
 Y = csr_matrix(Y) # make it sparse to save space
 
-with open(str(example_idx) + '.Y.all.labels.json', 'wb') as f:
+with open(args.out_file + '.labels.json', 'wb') as f:
   json.dump(all_labels, f)
 
 from common import save_sparse_csr
 
-save_sparse_csr(str(example_idx) + '.Y', Y)
+save_sparse_csr(args.out_file + '.Y', Y)
 
 
