@@ -19,7 +19,7 @@ class Example(object):
 
   @classmethod
   def from_json(cls, json_str):
-    return cls.__init__(json.loads(json_str))
+    return cls(json.loads(json_str))
 
   @classmethod
   def extract_code_sections(cls, mixed):
