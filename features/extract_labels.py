@@ -34,9 +34,9 @@ for i, labels in enumerate(read_labels):
     j = all_labels[label]
     Y[i,j] = 1
 
-with open(str(num_examples) + 'Y.all.labels.txt', 'wb') as f:
+with open(str(num_examples) + '.Y.all.labels.txt', 'wb') as f:
   json.dump(all_labels, f)
 
-np.save(str(num_examples) + 'Y', Y)
+np.save(str(num_examples) + '.Y', Y)
 
 
