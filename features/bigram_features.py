@@ -59,6 +59,6 @@ for example in DataStreamer.load_from_bz2(raw_text):
 vectorizer = HashingVectorizer(ngram_range=(1,2), binary = True, stop_words='english')
 X = vectorizer.fit_transform(documents)
 
-np.save('bigram.' + str(num_examples) + '.X', X)
+np.save('bigram.' + str(example_idx) + '.X', X)
 
 
