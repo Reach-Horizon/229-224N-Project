@@ -4,9 +4,10 @@ from scipy.sparse import csr_matrix
 from bs4 import BeautifulSoup
 
 def save_sparse_csr(filename, array):
+  row, col = array.nonzero()
   d = {
-    'indices': array.indices.tolist(),
-    'indptr': array.indptr.tolist(),
+    'row': row.tolist(),
+    'col': col.tolist(),
     'shape': array.shape,
     }
 
@@ -19,11 +20,11 @@ def load_sparse_csr(filename):
   d = json.loads(in_file.read())
   in_file.close()
 
-  data = np.ones_like(d['indices'], dtype=np.uint8)
-  indices = d['indices']
-  indptr = d['indptr']
-  shape = d['shape']
-  mat = csr_matrix((data, indices, indptr), shape=shape, dtype=np.uint8)
+  row = d['row']
+  col = d['col']
+  shape = tuple(d['shape'])
+  data = np.ones_like(row, dtype=np.uint8)
+  mat = csr_matrix((data, (row, col)), shape=shape, dtype=np.uint8)
 
   return mat
 
