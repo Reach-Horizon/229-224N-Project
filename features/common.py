@@ -4,12 +4,13 @@ from scipy.sparse import csr_matrix
 from bs4 import BeautifulSoup
 
 def save_sparse_csr(filename, array):
-  # cannot use pickle or np.save because of python bug: http://bugs.python.org/issue11564
-  np.savetxt(filename+'.gz', array)
+    np.savez(filename,data = array.data ,indices=array.indices,
+             indptr =array.indptr, shape=array.shape )
 
 def load_sparse_csr(filename):
-  mat = np.loadtxt(filename+'.gz')
-  return mat
+    loader = np.load(filename)
+    return csr_matrix((  loader['data'], loader['indices'], loader['indptr']),
+                         shape = loader['shape'], dtype=np.uint8)
 
 def extract_code_sections(mixed):
   """
