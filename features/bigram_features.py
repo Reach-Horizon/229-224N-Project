@@ -54,5 +54,3 @@ outfile.close()
 from common import save_sparse_csr
 
 save_sparse_csr(args.out_file + '.X', X)
-
-

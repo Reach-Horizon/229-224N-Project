@@ -1,16 +1,31 @@
 import numpy as np
-import cPickle as pickle
+import json, bz2
 from scipy.sparse import csr_matrix
 from bs4 import BeautifulSoup
 
 def save_sparse_csr(filename, array):
-    np.savez(filename,data = array.data ,indices=array.indices,
-             indptr =array.indptr, shape=array.shape )
+  d = {
+    'indices': array.indices.tolist(),
+    'indptr': array.indptr.tolist(),
+    'shape': array.shape,
+    }
+
+  out_file = bz2.BZ2File(filename + '.custom.sav.bz2', 'wb', compresslevel=9)
+  out_file.write(json.dumps(d))
+  out_file.close()
 
 def load_sparse_csr(filename):
-    loader = np.load(filename)
-    return csr_matrix((  loader['data'], loader['indices'], loader['indptr']),
-                         shape = loader['shape'], dtype=np.uint8)
+  in_file = bz2.BZ2File(filename + '.custom.sav.bz2', 'rb', compresslevel=9)
+  d = json.loads(in_file.read())
+  in_file.close()
+
+  data = np.ones_like(d['indices'], dtype=np.uint8)
+  indices = d['indices']
+  indptr = d['indptr']
+  shape = d['shape']
+  mat = csr_matrix((data, indices, indptr), shape=shape, dtype=np.uint8)
+
+  return mat
 
 def extract_code_sections(mixed):
   """
