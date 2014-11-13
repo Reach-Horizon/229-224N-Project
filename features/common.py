@@ -1,5 +1,5 @@
 import numpy as np
-import json, bz2
+import logging, bz2
 from scipy.sparse import csr_matrix
 from bs4 import BeautifulSoup
 
@@ -7,6 +7,7 @@ def save_sparse_csr(filename, array):
   out_file = bz2.BZ2File(filename + '.custom.sav.bz2', 'wb', compresslevel=9)
   out_file.write(str(array.shape[0]) + "," + str(array.shape[1]) + "\n")
   row_indices, col_indices = array.nonzero()
+  logging.info("writing to " + filename)
   for row, col in zip(row_indices.tolist(), col_indices.tolist()):
     out_file.write(str(row) + "," + str(col) + "\n")
   out_file.close()
@@ -14,6 +15,8 @@ def save_sparse_csr(filename, array):
 def load_sparse_csr(filename):
   row_indices = []
   col_indices = []
+
+  logging.info('loading from ' + filename)
   in_file = bz2.BZ2File(filename + '.custom.sav.bz2', 'rb', compresslevel=9)
   lines = in_file.readlines()
   in_file.close()
