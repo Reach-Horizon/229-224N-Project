@@ -51,11 +51,6 @@ outfile = bz2.BZ2File(args.out_file + '.vocab.bz2', 'wb', compresslevel=9)
 json.dump(vectorizer.vocabulary_, outfile)
 outfile.close()
 
-from common import save_sparse_csr, load_sparse_csr
+from common import save_sparse_csr
 
 save_sparse_csr(args.out_file + '.X', X)
-
-XX = load_sparse_csr(args.out_file + '.X')
-
-temp = XX - X
-print np.sum(X.todense())
