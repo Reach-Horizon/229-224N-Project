@@ -20,8 +20,8 @@ def load_sparse_csr(filename):
   d = json.loads(in_file.read())
   in_file.close()
 
-  row = d['row']
-  col = d['col']
+  row = np.array(d['row'])
+  col = np.array(d['col'])
   shape = tuple(d['shape'])
   data = np.ones_like(row, dtype=np.uint8)
   mat = csr_matrix((data, (row, col)), shape=shape, dtype=np.uint8)
