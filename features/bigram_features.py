@@ -1,4 +1,5 @@
 import sys, bz2, json
+import numpy as np
 sys.path.append('../')
 from util.DataStreamer import DataStreamer
 from sklearn.feature_extraction.text import CountVectorizer
@@ -40,9 +41,9 @@ for example in DataStreamer.load_from_bz2(args.subsampled_bz2):
   documents += [noncode]
 
 if args.unigrams:
-  vectorizer = CountVectorizer(ngram_range=(1,1), binary = True, stop_words='english', lowercase=True, min_df=args.cutoff)
+  vectorizer = CountVectorizer(ngram_range=(1,1), binary = True, stop_words='english', lowercase=True, min_df=args.cutoff, dtype=np.uint8)
 else:
-  vectorizer = CountVectorizer(ngram_range=(1,2), binary = True, stop_words='english', lowercase=True, min_df=args.cutoff)
+  vectorizer = CountVectorizer(ngram_range=(1,2), binary = True, stop_words='english', lowercase=True, min_df=args.cutoff, dtype=np.uint8)
 
 X = vectorizer.fit_transform(documents)
 
