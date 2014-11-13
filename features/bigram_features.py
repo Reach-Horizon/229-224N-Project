@@ -1,4 +1,4 @@
-import sys, bz2, json
+import sys, bz2, json, logging
 import numpy as np
 sys.path.append('../')
 from util.DataStreamer import DataStreamer
@@ -6,6 +6,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from common import extract_code_sections
 
 import argparse
+
+logging.basicConfig(level=logging.INFO)
 
 parser = argparse.ArgumentParser(description='extracts bigram features from data')
 parser.add_argument('subsampled_bz2', help="the input subsampled bz2 file to read and extract from")

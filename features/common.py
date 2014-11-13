@@ -7,7 +7,7 @@ def save_sparse_csr(filename, array):
   out_file = bz2.BZ2File(filename + '.custom.sav.bz2', 'wb', compresslevel=9)
   out_file.write(str(array.shape[0]) + "," + str(array.shape[1]) + "\n")
   row_indices, col_indices = array.nonzero()
-  logging.info("writing to " + filename)
+  logging.info("saving (%s, %s) sparse matrix to %s" %(array.shape[0], array.shape[1], filename))
   for row, col in zip(row_indices.tolist(), col_indices.tolist()):
     out_file.write(str(row) + "," + str(col) + "\n")
   out_file.close()
@@ -16,13 +16,14 @@ def load_sparse_csr(filename):
   row_indices = []
   col_indices = []
 
-  logging.info('loading from ' + filename)
   in_file = bz2.BZ2File(filename + '.custom.sav.bz2', 'rb', compresslevel=9)
   lines = in_file.readlines()
   in_file.close()
 
   shape = lines[0].strip("\n ").split(",")
   shape = tuple([int(n) for n in shape])
+
+  logging.info("loading (%s, %s) sparse matrix from %s" %(shape[0], shape[1], filename))
 
   for line in lines[1:]:
     if line:
