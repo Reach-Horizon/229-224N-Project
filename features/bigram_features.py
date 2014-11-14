@@ -25,6 +25,7 @@ all_labels = set()
 example_idx = 0
 documents = []
 read_labels = []
+read_document_indices = []
 
 for example in DataStreamer.load_from_bz2(args.subsampled_bz2):
   if example_idx >= args.num_examples:
@@ -40,10 +41,11 @@ for example in DataStreamer.load_from_bz2(args.subsampled_bz2):
   if not noncode:
     continue
 
-  example_idx += 1
+  read_document_indices += [example_idx]
   documents += [noncode]
   all_labels = all_labels.union(example.data['tags'])
   read_labels += [example.data['tags']]
+  example_idx += 1
 
 if args.unigrams:
   vectorizer = CountVectorizer(ngram_range=(1,1), binary = True, stop_words='english', lowercase=True, min_df=args.cutoff, dtype=np.uint8)
@@ -54,6 +56,10 @@ X = vectorizer.fit_transform(documents)
 
 outfile = bz2.BZ2File(args.out_file + '.vocab.bz2', 'wb', compresslevel=9)
 json.dump(vectorizer.vocabulary_, outfile)
+outfile.close()
+
+outfile = bz2.BZ2File(args.out_file + '.doc.bz2', 'wb', compresslevel=9)
+json.dump(read_document_indices, outfile)
 outfile.close()
 
 from common import save_sparse_csr, load_sparse_csr
