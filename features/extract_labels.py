@@ -32,7 +32,7 @@ keys = list(all_labels)
 values = range(len(keys))
 all_labels = dict(zip(keys, values))
 
-Y = np.zeros((args.num_examples, len(keys)))
+Y = np.zeros((example_idx, len(keys)))
 for i, labels in enumerate(read_labels):
   for label in labels:
     j = all_labels[label]
