@@ -20,10 +20,11 @@ args = parser.parse_args()
 
 i = 0
 
-all_vocab = set()
+all_labels = set()
 
 example_idx = 0
 documents = []
+read_labels = []
 
 for example in DataStreamer.load_from_bz2(args.subsampled_bz2):
   if example_idx >= args.num_examples:
@@ -41,6 +42,8 @@ for example in DataStreamer.load_from_bz2(args.subsampled_bz2):
 
   example_idx += 1
   documents += [noncode]
+  all_labels = all_labels.union(example.data['tags'])
+  read_labels += [example.data['tags']]
 
 if args.unigrams:
   vectorizer = CountVectorizer(ngram_range=(1,1), binary = True, stop_words='english', lowercase=True, min_df=args.cutoff, dtype=np.uint8)
@@ -56,5 +59,30 @@ outfile.close()
 from common import save_sparse_csr, load_sparse_csr
 
 save_sparse_csr(args.out_file + '.X', X)
-#XX = load_sparse_csr(args.out_file + '.X')
-#print np.sum(X.todense() - XX.todense())
+# XX = load_sparse_csr(args.out_file + '.X')
+# print np.sum(X.todense() - XX.todense())
+
+
+
+keys = list(all_labels)
+values = range(len(keys))
+all_labels = dict(zip(keys, values))
+
+Y = np.zeros((example_idx, len(keys)))
+for i, labels in enumerate(read_labels):
+  for label in labels:
+    j = all_labels[label]
+    Y[i,j] = 1
+
+from scipy.sparse import csr_matrix
+Y = csr_matrix(Y) # make it sparse to save space
+
+outfile = bz2.BZ2File(args.out_file + '.labels.bz2', 'wb', compresslevel=9)
+json.dump(all_labels, outfile)
+outfile.close()
+
+from common import save_sparse_csr
+
+save_sparse_csr(args.out_file + '.Y', Y)
+# YY = load_sparse_csr(args.out_file + '.Y')
+# print np.sum(Y.todense() - YY.todense())
