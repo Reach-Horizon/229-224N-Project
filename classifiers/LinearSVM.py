@@ -55,7 +55,7 @@ class MultinomialNaiveBayes(object):
 			self.allLabels = allLabels
 
 			#Form sparse indicator matrix for posts--keep counts of words
-			vec = CountVectorizer(binary = False)
+			vec = CountVectorizer(binary = False, ngram_range = (1,2))
 			self.actualPosts = posts
 			self.posts = vec.fit_transform(posts).toarray()
 
