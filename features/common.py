@@ -17,22 +17,19 @@ def load_sparse_csr(filename):
   col_indices = []
 
   in_file = bz2.BZ2File(filename + '.custom.sav.bz2', 'rb', compresslevel=9)
-  lines = in_file.readlines()
-  in_file.close()
-
-  shape = lines[0].strip("\n ").split(",")
-  shape = tuple([int(n) for n in shape])
-
-  logging.info("loading (%s, %s) sparse matrix from %s" %(shape[0], shape[1], filename))
-
-  for line in lines[1:]:
+  for line in in_file:
     if line:
       terms = line.strip("\n ").split(",")
       row_indices += [int(terms[0])]
       col_indices += [int(terms[1])]
+  in_file.close()
 
-  row_indices = np.array(row_indices)
-  col_indices = np.array(col_indices)
+  shape = tuple([row_indices[0], col_indices[0]])
+
+  logging.info("loading (%s, %s) sparse matrix from %s" %(shape[0], shape[1], filename))
+
+  row_indices = np.array(row_indices[1:])
+  col_indices = np.array(col_indices[1:])
 
   data = np.ones_like(row_indices, dtype=np.uint8)
   mat = csr_matrix((data, (row_indices, col_indices)), shape=shape, dtype=np.uint8)
