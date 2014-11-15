@@ -9,30 +9,33 @@ def save_sparse_csr(filename, array):
   row_indices, col_indices = array.nonzero()
   logging.info("saving (%s, %s) sparse matrix to %s" %(array.shape[0], array.shape[1], filename))
   for row, col in zip(row_indices.tolist(), col_indices.tolist()):
-    out_file.write(str(row) + "," + str(col) + "\n")
+    out_file.write(str(row) + "," + str(col) + "," + str(array[row, col]) + "\n")
   out_file.close()
 
 def load_sparse_csr(filename):
   row_indices = []
   col_indices = []
+  data = []
 
   in_file = bz2.BZ2File(filename + '.custom.sav.bz2', 'rb', compresslevel=9)
+  first_line = in_file.readline().strip(" \n")
+  shape = tuple(first_line.split(","))
+
   for line in in_file:
     if line:
       terms = line.strip("\n ").split(",")
       row_indices += [int(terms[0])]
       col_indices += [int(terms[1])]
+      data += [float(terms[2])]
   in_file.close()
-
-  shape = tuple([row_indices[0], col_indices[0]])
 
   logging.info("loading (%s, %s) sparse matrix from %s" %(shape[0], shape[1], filename))
 
-  row_indices = np.array(row_indices[1:])
-  col_indices = np.array(col_indices[1:])
+  row_indices = np.array(row_indices)
+  col_indices = np.array(col_indices)
+  data = np.array(data)
 
-  data = np.ones_like(row_indices, dtype=np.uint8)
-  mat = csr_matrix((data, (row_indices, col_indices)), shape=shape, dtype=np.uint8)
+  mat = csr_matrix((data, (row_indices, col_indices)), shape=shape)
 
   return mat
 

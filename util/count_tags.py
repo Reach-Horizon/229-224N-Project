@@ -7,7 +7,7 @@ with open(fname, 'rb') as f:
     tags = f.read().replace("\n", ",")
 tags = tags.split(",")
 
-counts = Counter(tags)
+counts = Counter(tags).most_common(100)
 
 import cPickle as pickle
 with open('../full_data/tags.count', 'wb') as f:
