@@ -49,6 +49,7 @@ class BernoulliNaiveBayes(Classifier):
 		#Declare classifier specific to implementation
 		self.classifier = OneVsRestClassifier(BernoulliNB())
 
+
 	def train(self):
 		print 'Starting Training'
 		self.classifier.fit(self.trainFeatures, self.trainLabels) 
