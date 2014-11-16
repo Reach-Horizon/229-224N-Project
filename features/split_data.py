@@ -16,8 +16,8 @@ Y = common.load_sparse_csr(args.Y)
 Xtrain, Xtest, Ytrain, Ytest = train_test_split(X, Y, test_size = args.test_percentage)
 
 common.save_sparse_csr(args.X + '.train', Xtrain)
-common.save_sparse_csr(args.X + '.test', Ytrain)
-common.save_sparse_csr(args.Y + '.train', Xtest)
+common.save_sparse_csr(args.X + '.test', Xtest)
+common.save_sparse_csr(args.Y + '.train', Ytrain)
 common.save_sparse_csr(args.Y + '.test', Ytest)
 
 
