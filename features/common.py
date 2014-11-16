@@ -3,6 +3,12 @@ import logging, bz2
 from scipy.sparse import csr_matrix
 from bs4 import BeautifulSoup
 
+def save_dense(filename, array):
+  np.savez(filename + '.pca', array)
+
+def load_dense(filename, array):
+  return np.load(filename + '.pca' + '.npy')
+
 def save_sparse_csr(filename, array):
   out_file = bz2.BZ2File(filename + '.custom.sav.bz2', 'wb', compresslevel=9)
   out_file.write(str(array.shape[0]) + "," + str(array.shape[1]) + "\n")
