@@ -19,5 +19,5 @@ from DataStreamer import DataStreamer
 
 classif = BernoulliNaiveBayes(args.trainFeatures, args.trainLabels, args.numTrain, args.labels)
 classif.train()
-#classif.predict(args.testFeatures, args.testLabels, args.numTest)
+classif.predict(args.testFeatures, args.testLabels, args.numTest)
 

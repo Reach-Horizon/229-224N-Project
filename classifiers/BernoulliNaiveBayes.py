@@ -53,7 +53,7 @@ class BernoulliNaiveBayes(Classifier):
 	def train(self):
 		print 'Starting Training'
 		self.classifier.fit(self.trainFeatures, self.trainLabels) 
-		print 'Finished Training'
+		print 'Finished Training'	
 
 	def predict(self, testFeatures, testLabels, numSamples):
 		#Store labels as indicator matrix
