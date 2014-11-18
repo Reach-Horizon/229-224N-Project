@@ -1,6 +1,7 @@
 __author__ = 'victor'
 
 import argparse, logging
+from scipy import sparse
 
 logging.basicConfig(level=logging.INFO)
 
@@ -17,10 +18,12 @@ import numpy as np
 logging.info('loading ' + args.X_train)
 
 X_train = load_sparse_csr(args.X_train)
+num_pca_examples = min(10000, X_train.shape[0])
+X_pca = X_train[:num_pca_examples, :]
 pca = PCA(n_components=args.num_features)
 
-logging.info('fit transforming ' + args.X_train + ' with ' + str(args.num_features) + ' components')
-X_train = pca.fit_transform(X_train.todense())
+logging.info('fit transforming ' + args.X_train + ' with ' + str(args.num_features) + ' components using the first ' + str(num_pca_examples) + ' examples')
+X_pca = sparse.csr_matrix(pca.fit_transform(X_pca.todense()))
 save_dense(args.X_train + '.pca', X_train)
 
 logging.info('transforming ' + args.X_test)
