@@ -46,7 +46,7 @@ for example in DataStreamer.load_from_file(args.in_file):
     tags = example.data['tags']
     matching = set(tags).intersection(most_common_tags)
 
-    if len([c for c in matching if c > args.max_count]) > 1:
+    if len([c for c in matching if seen_tags_count[c] > args.max_count]) > 1:
       # skip
       continue
 
