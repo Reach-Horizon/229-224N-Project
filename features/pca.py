@@ -1,6 +1,7 @@
 __author__ = 'victor'
 
 import argparse, logging
+from scipy import sparse
 
 logging.basicConfig(level=logging.INFO)
 
@@ -17,19 +18,29 @@ import numpy as np
 logging.info('loading ' + args.X_train)
 
 X_train = load_sparse_csr(args.X_train)
+num_pca_examples = min(10000, X_train.shape[0])
 pca = PCA(n_components=args.num_features)
 
-logging.info('fit transforming ' + args.X_train + ' with ' + str(args.num_features) + ' components')
-X_train = pca.fit_transform(X_train.todense())
-save_dense(args.X_train + '.pca', X_train)
+logging.info('fit transforming ' + args.X_train + ' with ' + str(args.num_features) + ' components using the first ' + str(num_pca_examples) + ' examples')
+X_train[:num_pca_examples, :] = sparse.csr_matrix(pca.fit_transform(X_train[:num_pca_examples, :].todense()))
+
+rest_indices = range(num_pca_examples, X_train.shape[0])
+chunks=[rest_indices[x:x+10000] for x in xrange(0, len(rest_indices), 10000)]
+for indices in chunks:
+  X_train[indices, :] = pca.transform(X_train[indices, :])
+
+save_sparse_csr(args.X_train + '.pca', X_train)
 
 logging.info('transforming ' + args.X_test)
+
 X_test = load_sparse_csr(args.X_test)
+
+rest_indices = range(0, X_test.shape[0])
+chunks=[rest_indices[x:x+10000] for x in xrange(0, len(rest_indices), 10000)]
+for indices in chunks:
+  logging.info('transforming examples %s to %s' %(indices[0], indices[-1]))
+  X_test[indices, :] = pca.transform(X_test[indices, :])
 X_test = pca.transform(X_test.todense())
-save_dense(args.X_test + '.pca', X_test)
-
-
-
-
+save_sparse_csr(args.X_test + '.pca', X_test)
 
 
