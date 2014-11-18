@@ -31,8 +31,6 @@ for indices in chunks:
 
 save_sparse_csr(args.X_train + '.pca', X_train)
 
-
-
 logging.info('transforming ' + args.X_test)
 
 X_test = load_sparse_csr(args.X_test)
@@ -40,6 +38,7 @@ X_test = load_sparse_csr(args.X_test)
 rest_indices = range(0, X_test.shape[0])
 chunks=[rest_indices[x:x+10000] for x in xrange(0, len(rest_indices), 10000)]
 for indices in chunks:
+  logging.info('transforming examples %s to %s' %(indices[0], indices[-1]))
   X_test[indices, :] = pca.transform(X_test[indices, :])
 X_test = pca.transform(X_test.todense())
 save_sparse_csr(args.X_test + '.pca', X_test)
