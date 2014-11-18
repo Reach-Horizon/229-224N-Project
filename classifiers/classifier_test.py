@@ -3,6 +3,8 @@ import argparse
 import sys
 from Classifier import Classifier 
 from BernoulliNaiveBayes import BernoulliNaiveBayes
+from MultinomialNaiveBayes import MultinomialNaiveBayes
+from LinearSVM import LinearSVM
 
 parser = argparse.ArgumentParser(description = 'arguments for classifier tester')
 parser.add_argument('--trainFeatures', type = str, help = 'features file for training classifier')
@@ -17,7 +19,7 @@ args = parser.parse_args()
 sys.path.append("../util")
 from DataStreamer import DataStreamer
 
-classif = BernoulliNaiveBayes(args.trainFeatures, args.trainLabels, args.numTrain, args.labels)
+classif = LinearSVM(args.trainFeatures, args.trainLabels, args.numTrain, args.labels)
 classif.train()
 classif.predict(args.testFeatures, args.testLabels, args.numTest)
 

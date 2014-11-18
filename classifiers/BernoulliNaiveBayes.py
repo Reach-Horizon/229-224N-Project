@@ -43,7 +43,6 @@ def printDebug(posts, trueIndexList, output, allLabels):
 class BernoulliNaiveBayes(Classifier):
 
 	def __init__(self, trainFeatures, trainLabels, numSamples, labels):
-		"""Pass in the path to the pickle file that you wish to analyze."""
 		Classifier.__init__(self, trainFeatures, trainLabels, numSamples, labels)
 
 		#Declare classifier specific to implementation
@@ -51,12 +50,15 @@ class BernoulliNaiveBayes(Classifier):
 
 
 	def train(self):
+		print 'Train Features Shape: ', self.trainFeatures.shape
+		print 'Train Label Shape: ', self.trainLabels.shape
 		print 'Starting Training'
 		self.classifier.fit(self.trainFeatures, self.trainLabels) 
 		print 'Finished Training'	
 
 	def predict(self, testFeatures, testLabels, numSamples):
-		#Store labels as indicator matrix
 		super(BernoulliNaiveBayes, self).predict(testFeatures, testLabels, numSamples)
-		output	= self.classifier.predict(self.testFeatures)
-		print 'F1 Score: ', f1_score(self.testLabels, output, average = 'macro')
+		outputTest	= self.classifier.predict(self.testFeatures)
+		outputTrain = self.classifier.predict(self.trainFeatures)
+		print 'F1 Score Test: ', f1_score(self.testLabels, outputTest, average = 'macro')
+		print 'F1 Score Train: ', f1_score(self.trainLabels, outputTrain, average = 'macro')
