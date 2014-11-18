@@ -5,6 +5,8 @@
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.datasets import make_multilabel_classification
 from sklearn.naive_bayes import BernoulliNB
+from sklearn.naive_bayes import MultinomialNB
+
 from sklearn.svm import SVC
 from sklearn.feature_extraction.text import CountVectorizer, HashingVectorizer
 from sklearn.preprocessing import MultiLabelBinarizer
@@ -32,16 +34,18 @@ class OneVsRest(Classifier):
 
         num_examples = self.trainLabels.shape[0]
         num_labels = self.trainLabels.shape[1]
+        self.num_labels = num_labels
 
-        classifiers = []
+        self.classifiers = []
         for k in range(num_labels):
-            classifiers.append(Clf())
+            self.classifiers.append(Clf())
 
         x_pos = [[] for x in range(num_labels) ] # list for each label (i) of examples (j) with this label
         x_neg = [[] for x in range(num_labels) ]
         x_neg_sample = [[] for x in range(num_labels) ]
-        sample_indices = [[] for x in range(num_labels) ]
+        self.sample_indices = [[] for x in range(num_labels) ]
 
+        print 'Subsampling data for each classifier.'
         for i in range(num_labels):
             for j in range(num_examples):
                 if (self.trainLabels[j,i] > 0):
@@ -51,14 +55,8 @@ class OneVsRest(Classifier):
 
             x_neg_sample[i] = [ x_neg[i][k] for k in sorted(random.sample(xrange(len(x_neg[i])), len(x_pos[i])))]
             # create list of row indices corresponding to examples want to include when training class i
-            sample_indices[i] = x_pos[i] + x_neg_sample[i]
-            random.shuffle(sample_indices[i])
-            # train classifier for class i with appropriate subsamples of train matrices
-            if len(sample_indices[i]) != 0:
-                classifiers[i].fit(self.trainFeatures[sample_indices[i],:],np.ravel(self.trainLabels[sample_indices[i],i]))
-            else:
-                print 'WARNING: label', i, 'never occurs in training set. Careful how you split train & test matrices.'
-
+            self. sample_indices[i] = x_pos[i] + x_neg_sample[i]
+            random.shuffle(self.sample_indices[i])
 
             #print len(x_pos[i]), len(x_neg[i]), len(x_neg_sample[i]), len(sample_indices[i])
 
@@ -77,7 +75,32 @@ class OneVsRest(Classifier):
 
 
     def train(self):
-        pass
+        print 'Starting training...'
+        for i in range(self.num_labels):
+            # train classifier for class i with appropriate subsamples of train matrices
+            if len(self.sample_indices[i]) != 0:
+                self.classifiers[i].fit(self.trainFeatures[self.sample_indices[i],:],
+                                   np.ravel(self.trainLabels[self.sample_indices[i],i]))
+            else:
+                print 'WARNING: label', i, 'never occurs in training set. Careful how you split train & test matrices.'
+        print 'Finished training.'
 
-    def predict(self, testFeatures, testLabels, numSamples):
-        pass
+    #def predict(self, testFeatures, testLabels, numSamples):
+    def predict(self):
+        print 'Starting prediction...'
+        predictions = []
+        f1_indep = []
+        outputTrain = None
+        for i in range(self.num_labels):
+            result = self.classifiers[i].predict(self.trainFeatures)
+            result = np.array(result).reshape(len(result), 1)
+            predictions.append( result )
+            f1_indep.append(f1_score(self.trainLabels[:,i], predictions[i], average = 'macro'))
+            if outputTrain == None:
+                outputTrain = predictions[i]
+            else:
+                outputTrain = np.hstack((outputTrain, predictions[i]))
+            #print 'Indep F1 Score on Train (for classifier', i ,'):', f1_indep[i]
+
+        print 'Average of indep F1 Scores on Train', np.mean(f1_indep)
+        print 'F1 total on Train:', f1_score(self.trainLabels, outputTrain, average = 'macro')
