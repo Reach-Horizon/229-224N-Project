@@ -29,8 +29,6 @@ class Classifier(object):
         matY = common.load_sparse_csr("../features/" + trainLabels)
 
         self.trainFeatures = matX[range(numSamples),:] #Get numSamples entries
-        print 'Shape: ', matY.shape
-        print 'Shape: ', matX.shape
         self.trainLabels = matY[range(numSamples),:].todense()
 
     def train(self):
