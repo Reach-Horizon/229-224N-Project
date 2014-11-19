@@ -18,12 +18,23 @@ from sklearn.ensemble import RandomForestClassifier
 import argparse
 from Classifier import Classifier
 import numpy as np
-import random
+import random, os
 
 class OneVsRest(Classifier):
 
     def __init__(self, Clf, trainFeatures, trainLabels, labels):
         Classifier.__init__(self, trainFeatures, trainLabels, labels)
+
+        self.num_examples = self.trainLabels.shape[0]
+        self.num_labels = self.trainLabels.shape[1]
+
+        self.classifiers = []
+        self.Clf = Clf
+
+
+
+    def train(self):
+        print 'Starting training...'
 
         #for class i = 1 to k
             #x_pos = examples in class i
@@ -32,57 +43,28 @@ class OneVsRest(Classifier):
 
             #train classifier[i] on (x_pos, x_neg)
 
-        num_examples = self.trainLabels.shape[0]
-        num_labels = self.trainLabels.shape[1]
-        self.num_labels = num_labels
+        for k in range(self.num_labels):
+            Clf = self.Clf
+            c = Clf()
 
-        self.classifiers = []
-        for k in range(num_labels):
-            self.classifiers.append(Clf())
+            my_Y = np.squeeze(np.asarray(self.trainLabels[:,k]))
+            pos_indices = np.where(my_Y == 1)[0]
+            neg_indices = np.where(my_Y == 0)[0]
+            np.random.shuffle(neg_indices)
+            neg_indices = neg_indices[:len(pos_indices)]
 
-        x_pos = [[] for x in range(num_labels) ] # list for each label (i) of examples (j) with this label
-        x_neg = [[] for x in range(num_labels) ]
-        x_neg_sample = [[] for x in range(num_labels) ]
-        self.sample_indices = [[] for x in range(num_labels) ]
+            train_indices = np.hstack((pos_indices, neg_indices))
+            np.random.shuffle(train_indices)
 
-        print 'Subsampling data for each classifier.'
-        for i in range(num_labels):
-            for j in range(num_examples):
-                if (self.trainLabels[j,i] > 0):
-                    x_pos[i].append(j)
-                else:
-                    x_neg[i].append(j)
+            X = self.trainFeatures[train_indices, :]
+            Y = my_Y[train_indices]
 
-            x_neg_sample[i] = [ x_neg[i][k] for k in sorted(random.sample(xrange(len(x_neg[i])), len(x_pos[i])))]
-            # create list of row indices corresponding to examples want to include when training class i
-            self. sample_indices[i] = x_pos[i] + x_neg_sample[i]
-            random.shuffle(self.sample_indices[i])
+            c.fit(X, Y)
+            Y_pred = c.predict(X)
+            self.classifiers.append(c)
 
-            #print len(x_pos[i]), len(x_neg[i]), len(x_neg_sample[i]), len(sample_indices[i])
+            print 'f1 for label %s: %s' % (k, f1_score(Y, Y_pred, average = 'macro'))
 
-        #print x_neg_sample[1]
-        #print x_pos [1]
-        #print sample_indices[1]
-
-        #print np.transpose(self.trainLabels[sample_indices[1],1])
-        #print np.transpose(self.trainLabels[sample_indices[1],1]).shape
-        #print self.trainFeatures[sample_indices[1],:]
-        #print self.trainFeatures[sample_indices[1],:].shape
-
-        #pass in to classifier [i]:
-        #self.trainLabels[sample_indices[i],:]
-        #self.trainFeatures[sample_indices[i],:]
-
-
-    def train(self):
-        print 'Starting training...'
-        for i in range(self.num_labels):
-            # train classifier for class i with appropriate subsamples of train matrices
-            if len(self.sample_indices[i]) != 0:
-                self.classifiers[i].fit(self.trainFeatures[self.sample_indices[i],:],
-                                   np.ravel(self.trainLabels[self.sample_indices[i],i]))
-            else:
-                print 'WARNING: label', i, 'never occurs in training set. Careful how you split train & test matrices.'
         print 'Finished training.'
 
     def predict(self):

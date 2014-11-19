@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-top_labels=10
+top_labels=100
 min_count=100
 max_count=200
-cutoff=2
+cutoff=5
 
 prefix=top${top_labels}min${min_count}
 

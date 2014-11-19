@@ -22,6 +22,6 @@ from OneVsRest import OneVsRest
 
 classif = OneVsRest(BernoulliNB, args.trainFeatures, args.trainLabels, args.labels)
 classif.train()
-classif.predict()
+#classif.predict()
 #classif.predict(args.testFeatures, args.testLabels, args.numTest)
 
