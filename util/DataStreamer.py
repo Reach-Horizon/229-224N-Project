@@ -56,12 +56,15 @@ class DataStreamer(object):
     """
     returns a generator over the Examples present in the file
     """
-    with codecs.open(fname, 'rb', encoding='ascii', errors='ignore') as f:
-      csv_f = csv.reader(f)
-      fields = csv_f.next()
 
-      for line in csv_f:
-          example = Example.from_csv_entries(line, fields)
-          yield example
+    f = bz2.BZ2File(fname, 'rb')
+    #with codecs.open(fname, 'rb', encoding='ascii', errors='ignore') as f:
+    csv_f = csv.reader(f)
+    fields = csv_f.next()
+
+    for line in csv_f:
+        example = Example.from_csv_entries(line, fields)
+        yield example
+    f.close()
 
 

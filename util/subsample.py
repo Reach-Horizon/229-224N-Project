@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 
 parser = argparse.ArgumentParser(description='Module for subsampling the data so that we only concern ourselves with posts that have one of the top n most frequent tags.')
 parser.add_argument('tag_count', help="the tags.count file")
-parser.add_argument('in_file', help="the Train.csv")
+parser.add_argument('in_file', help="the Train.csv.bz2")
 parser.add_argument('out_file', help="the output subsampled bz2 file")
 parser.add_argument('-n', '--top_n', type=int, help='top n tags to collect. Default=100', default=100)
 parser.add_argument('--min_count', type=int, help='the minimum number of examples to collect for each label. Default=100', default=100)
