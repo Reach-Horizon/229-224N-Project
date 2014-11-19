@@ -17,8 +17,8 @@ python features/bigram_features.py experiments/${prefix}.bz2 experiments/${prefi
 
 echo "your files are at experiments/${prefix}.*"
 
-echo "splitting data into train and test"
-python features/split_data.py experiments/${prefix}.X experiments/${prefix}.Y -p 0.2
+echo "splitting data into train, validation and test"
+python features/split_data.py experiments/${prefix}.X experiments/${prefix}.Y
 
 echo "train and testing 1 vs rest"
 python classifiers/onevsrest_test.py experiments/${prefix}.X.train experiments/${prefix}.Y.train --testFeatures experiments/${prefix}.X.test --testLabels experiments/${prefix}.Y.test
