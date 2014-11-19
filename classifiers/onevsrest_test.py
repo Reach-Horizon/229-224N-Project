@@ -2,6 +2,8 @@
 import argparse
 import sys
 from sklearn.naive_bayes import BernoulliNB
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.svm import SVC
 
 parser = argparse.ArgumentParser(description = 'arguments for classifier tester')
 parser.add_argument('--trainFeatures', type = str, help = 'features file for training classifier')
@@ -18,6 +20,7 @@ from DataStreamer import DataStreamer
 from OneVsRest import OneVsRest
 
 classif = OneVsRest(BernoulliNB, args.trainFeatures, args.trainLabels, args.numTrain, args.labels)
-#classif.train()
+classif.train()
+classif.predict()
 #classif.predict(args.testFeatures, args.testLabels, args.numTest)
 
