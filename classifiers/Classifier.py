@@ -16,7 +16,7 @@ sys.path.append("../util")
 from DataStreamer import DataStreamer
 
 class Classifier(object):
-    def __init__(self, trainFeatures, trainLabels, numSamples, labels):
+    def __init__(self, trainFeatures, trainLabels, numSamples = None, labels = None):
         #Read in labels index mapping
         with open(labels, 'rb') as f:
             labelsDict = f.readline()
@@ -28,16 +28,28 @@ class Classifier(object):
         matX = common.load_sparse_csr("../features/" + trainFeatures)
         matY = common.load_sparse_csr("../features/" + trainLabels)
 
+        if numSamples == None:
+            numSamples = matX.shape[0]
         self.trainFeatures = matX[range(numSamples),:] #Get numSamples entries
         self.trainLabels = matY[range(numSamples),:].todense()
 
     def train(self):
         pass
 
-    def predict(self, testFeatures, testLabels, numSamples):
+    def setUpPredict(self, testFeatures, testLabels, numSamples = None):
         matX = common.load_sparse_csr("../features/" + testFeatures)
         matY = common.load_sparse_csr("../features/" + testLabels)
+        if numSamples == None:
+            numSamples = matX.shape[0] #Update numSamples to be total num examples
 
         self.testFeatures = matX[range(numSamples),:] #Get numSamples entries
         self.testLabels = matY[range(numSamples),:].todense()
+
+    def predict(self, testFeatures, testLabels, numSamples = None):
+        pass
+        # matX = common.load_sparse_csr("../features/" + testFeatures)
+        # matY = common.load_sparse_csr("../features/" + testLabels)
+
+        # self.testFeatures = matX[range(numSamples),:] #Get numSamples entries
+        # self.testLabels = matY[range(numSamples),:].todense()
 
