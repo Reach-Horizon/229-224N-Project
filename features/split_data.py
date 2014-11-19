@@ -45,7 +45,7 @@ Xtrain = X[train_indices, :]
 Ytrain = csr_matrix(Y[train_indices, :])
 
 Xtest = X[test_indices, :]
-Ytest = Y[test_indices, :]
+Ytest = csr_matrix(Y[test_indices, :])
 
 common.save_sparse_csr(args.X + '.train', Xtrain)
 common.save_sparse_csr(args.X + '.test', Xtest)
