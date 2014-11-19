@@ -4,11 +4,11 @@ import sys, os
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
-from features.common import load_sparse_csr
-
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
+from features.common import load_sparse_csr
+
 
 parser = argparse.ArgumentParser(description = 'arguments for classifier tester')
 parser.add_argument('trainFeatures', type = str, help = 'features file for training classifier')

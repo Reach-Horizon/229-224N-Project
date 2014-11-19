@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-top_labels=100
+top_labels=10
 min_count=100
 max_count=200
-cutoff=5
+cutoff=2
 
 prefix=top${top_labels}min${min_count}
 
@@ -16,3 +16,10 @@ echo "extracting features"
 python features/bigram_features.py experiments/${prefix}.bz2 experiments/${prefix} -c $cutoff
 
 echo "your files are at experiments/${prefix}.*"
+
+echo "splitting data into train and test"
+python features/split_data.py experiments/${prefix}.X experiments/${prefix}.Y -p 0.2
+
+echo "train and testing 1 vs rest"
+python classifiers/onevsrest_test.py experiments/${prefix}.X.train experiments/${prefix}.Y.train --testFeatures experiments/${prefix}.X.test --testLabels experiments/${prefix}.Y.test
+
