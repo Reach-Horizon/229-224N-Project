@@ -4,18 +4,15 @@
 Defines skeleton constructor, training, and prediction methods."""
 
 import ast
-import sys
+import sys, os
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics import f1_score
 import numpy as np
 from scipy.sparse import csr_matrix
 
-from os.path import dirname
-
-print dirname(dirname(__file__))
-
-sys.path.append(dirname(dirname(__file__)))
+root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(root_dir)
 
 from features import common
 from util.DataStreamer import DataStreamer

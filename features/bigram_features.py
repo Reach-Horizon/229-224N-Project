@@ -1,8 +1,9 @@
 import sys, bz2, json, logging
 import numpy as np
+import os
 
-from os.path import dirname
-sys.path.append(dirname(dirname(__file__)))
+root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(root_dir)
 
 from util.DataStreamer import DataStreamer
 from sklearn.feature_extraction.text import CountVectorizer

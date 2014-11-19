@@ -1,13 +1,12 @@
 """Harness for testing whether a classifier works correctly."""
 import argparse
-import sys
+import sys, os
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
 
-from os.path import dirname
-sys.path.append(dirname(dirname(__file__)))
-
+root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.append(root_dir)
 
 parser = argparse.ArgumentParser(description = 'arguments for classifier tester')
 parser.add_argument('trainFeatures', type = str, help = 'features file for training classifier')
