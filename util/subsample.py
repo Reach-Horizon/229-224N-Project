@@ -46,6 +46,8 @@ for example in DataStreamer.load_from_file(args.in_file):
     tags = example.data['tags']
     matching = set(tags).intersection(most_common_tags)
 
+    i += 1
+
     if len([c for c in matching if seen_tags_count[c] > args.max_count]) > 1:
       # skip
       continue
@@ -58,7 +60,7 @@ for example in DataStreamer.load_from_file(args.in_file):
         example.data['tags'] = list(matching)
         subsampled_file.write(example.to_json() + "\n")
         j += 1
-    i += 1
+
 
 print 'processed', i, 'dumped', j
 subsampled_file.close()    

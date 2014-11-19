@@ -2,39 +2,23 @@
 
 """A custom OneVsRest classifier for multilabel classification
    with skewed label distributions."""
-from sklearn.multiclass import OneVsRestClassifier
-from sklearn.datasets import make_multilabel_classification
-from sklearn.naive_bayes import BernoulliNB
-from sklearn.naive_bayes import MultinomialNB
-
-from sklearn.svm import SVC
-from sklearn.feature_extraction.text import CountVectorizer, HashingVectorizer
-from sklearn.preprocessing import MultiLabelBinarizer
-import cPickle as pickle
-import sys
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import hamming_loss, f1_score
-from sklearn.ensemble import RandomForestClassifier
-import argparse
-from Classifier import Classifier
+from sklearn.metrics import f1_score
+from scipy.sparse import issparse
 import numpy as np
-import random, os
 
-class OneVsRest(Classifier):
+class OneVsRest():
 
-    def __init__(self, Clf, trainFeatures, trainLabels, labels):
-        Classifier.__init__(self, trainFeatures, trainLabels, labels)
-
-        self.num_examples = self.trainLabels.shape[0]
-        self.num_labels = self.trainLabels.shape[1]
-
+    def __init__(self, Clf):
         self.classifiers = []
         self.Clf = Clf
 
-
-
-    def train(self):
+    def train(self, X, Y):
         print 'Starting training...'
+
+        if issparse(Y):
+            Y = Y.todense()
+
+        num_labels = Y.shape[1]
 
         #for class i = 1 to k
             #x_pos = examples in class i
@@ -43,11 +27,11 @@ class OneVsRest(Classifier):
 
             #train classifier[i] on (x_pos, x_neg)
 
-        for k in range(self.num_labels):
+        for k in range(num_labels):
             Clf = self.Clf
             c = Clf()
 
-            my_Y = np.squeeze(np.asarray(self.trainLabels[:,k]))
+            my_Y = np.squeeze(np.asarray(Y[:,k]))
             pos_indices = np.where(my_Y == 1)[0]
             neg_indices = np.where(my_Y == 0)[0]
             np.random.shuffle(neg_indices)
@@ -56,32 +40,29 @@ class OneVsRest(Classifier):
             train_indices = np.hstack((pos_indices, neg_indices))
             np.random.shuffle(train_indices)
 
-            X = self.trainFeatures[train_indices, :]
-            Y = my_Y[train_indices]
+            my_X = X[train_indices, :]
+            my_Y = my_Y[train_indices]
 
-            c.fit(X, Y)
-            Y_pred = c.predict(X)
+            c.fit(my_X, my_Y)
+            my_Y_pred = c.predict(my_X)
             self.classifiers.append(c)
 
-            print 'f1 for label %s: %s' % (k, f1_score(Y, Y_pred, average = 'macro'))
+            print 'f1 for label %s: %s' % (k, f1_score(my_Y, my_Y_pred, average = 'macro'))
 
         print 'Finished training.'
 
-    def predict(self):
+    def predict(self, new_X, new_Y):
         print 'Starting prediction...'
-        predictions = []
-        f1_indep = []
-        outputTrain = None
-        for i in range(self.num_labels):
-            result = self.classifiers[i].predict(self.trainFeatures)
-            result = np.array(result).reshape(len(result), 1)
-            predictions.append( result )
-            f1_indep.append(f1_score(self.trainLabels[:,i], predictions[i], average = 'macro'))
-            if outputTrain == None:
-                outputTrain = predictions[i]
-            else:
-                outputTrain = np.hstack((outputTrain, predictions[i]))
-            #print 'Indep F1 Score on Train (for classifier', i ,'):', f1_indep[i]
 
-        print 'Average of indep F1 Scores on Train', np.mean(f1_indep)
-        print 'F1 total on Train:', f1_score(self.trainLabels, outputTrain, average = 'macro')
+        if issparse(Y):
+            new_Y = new_Y.todense()
+
+        num_labels = new_Y.shape[1]
+
+        for k in range(num_labels):
+            c = self.classifiers[k]
+
+            Y_pred = c.predict(new_X)
+
+            my_Y = np.squeeze(np.asarray(new_Y[:,k]))
+            print 'f1 for label %s: %s' % (k, f1_score(my_Y, Y_pred, average = 'macro'))
