@@ -1,6 +1,9 @@
 import sys, bz2, json, logging
 import numpy as np
-sys.path.append('../')
+
+from os.path import dirname
+sys.path.append(dirname(dirname(__file__)))
+
 from util.DataStreamer import DataStreamer
 from sklearn.feature_extraction.text import CountVectorizer
 from common import extract_code_sections
@@ -12,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 parser = argparse.ArgumentParser(description='extracts bigram features from data')
 parser.add_argument('subsampled_bz2', help="the input subsampled bz2 file to read and extract from")
 parser.add_argument('out_file', help="where to dump the extracted features")
-parser.add_argument('-n', '--num_examples', type=int, help='number of examples to use. Default=2 million', default=2000000)
+parser.add_argument('-n', '--num_examples', type=int, help='hard limit for the number of examples to use. Default=2 million', default=2000000)
 parser.add_argument('-u', '--unigrams', action='store_true', help='use only unigrams instead', default=False)
 parser.add_argument('-b', '--binarize', action='store_true', help='use only binary indicators for features instead of real counts', default=False)
 parser.add_argument('-c', '--cutoff', type=int, help='words that occur less than this number of times will be ignored. Default=10', default=10)
@@ -92,9 +95,8 @@ for i, labels in enumerate(read_labels):
 from scipy.sparse import csr_matrix
 Y = csr_matrix(Y) # make it sparse to save space
 
-outfile = bz2.BZ2File(args.out_file + '.labels.bz2', 'wb', compresslevel=9)
-json.dump(all_labels, outfile)
-outfile.close()
+with open(args.out_file + '.labels', 'wb') as f:
+  json.dump(all_labels, f)
 
 from common import save_sparse_csr
 

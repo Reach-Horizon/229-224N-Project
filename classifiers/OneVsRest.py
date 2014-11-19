@@ -22,8 +22,8 @@ import random
 
 class OneVsRest(Classifier):
 
-    def __init__(self, Clf, trainFeatures, trainLabels, numSamples, labels):
-        Classifier.__init__(self, trainFeatures, trainLabels, numSamples, labels)
+    def __init__(self, Clf, trainFeatures, trainLabels, labels):
+        Classifier.__init__(self, trainFeatures, trainLabels, labels)
 
         #for class i = 1 to k
             #x_pos = examples in class i
@@ -85,7 +85,6 @@ class OneVsRest(Classifier):
                 print 'WARNING: label', i, 'never occurs in training set. Careful how you split train & test matrices.'
         print 'Finished training.'
 
-    #def predict(self, testFeatures, testLabels, numSamples):
     def predict(self):
         print 'Starting prediction...'
         predictions = []

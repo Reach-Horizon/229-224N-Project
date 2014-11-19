@@ -10,13 +10,18 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics import f1_score
 import numpy as np
 from scipy.sparse import csr_matrix
-sys.path.append("../features")
-import common
-sys.path.append("../util")
-from DataStreamer import DataStreamer
+
+from os.path import dirname
+
+print dirname(dirname(__file__))
+
+sys.path.append(dirname(dirname(__file__)))
+
+from features import common
+from util.DataStreamer import DataStreamer
 
 class Classifier(object):
-    def __init__(self, trainFeatures, trainLabels, numSamples = None, labels = None):
+    def __init__(self, trainFeatures, trainLabels, labels, numSamples = None):
         #Read in labels index mapping
         with open(labels, 'rb') as f:
             labelsDict = f.readline()
@@ -25,8 +30,8 @@ class Classifier(object):
         #Store mapping from indices to labels
         self.reverseLabels = {v:k for k,v in self.labels.items()}
 
-        matX = common.load_sparse_csr("../features/" + trainFeatures)
-        matY = common.load_sparse_csr("../features/" + trainLabels)
+        matX = common.load_sparse_csr(trainFeatures)
+        matY = common.load_sparse_csr(trainLabels)
 
         if numSamples == None:
             numSamples = matX.shape[0]
