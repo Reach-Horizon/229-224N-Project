@@ -64,6 +64,8 @@ Ytest = csr_matrix(Y[test_indices, :])
 
 logging.info('created %s train, %s val, %s test examples' % (len(train_indices), len(val_indices), len(test_indices)))
 
+# TODO: dump the indices instead so we use the same train/test/dev set across different runs
+
 common.save_sparse_csr(args.X + '.train', Xtrain)
 common.save_sparse_csr(args.Y + '.train', Ytrain)
 
