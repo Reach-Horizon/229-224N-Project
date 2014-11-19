@@ -1,6 +1,7 @@
 """Harness for testing whether a classifier works correctly."""
 import argparse
 import sys, os
+import numpy as np
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import SVC
@@ -20,16 +21,28 @@ args = parser.parse_args()
 
 from OneVsRest import OneVsRest
 
-classif = OneVsRest(BernoulliNB)
+clazz = BernoulliNB
+
+classif = OneVsRest(clazz)
+
+print 'training 1 vs rest with', clazz
 
 Xtrain = load_sparse_csr(args.trainFeatures)
 Ytrain = load_sparse_csr(args.trainLabels)
 
-classif.train(Xtrain, Ytrain)
+train_scores = classif.train(Xtrain, Ytrain)
+
+print 'training average f1', np.mean([score[0] for score in train_scores])
+print 'training average precision', np.mean([score[1] for score in train_scores])
+print 'training average recall', np.mean([score[2] for score in train_scores])
+
 
 if args.testFeatures and args.testLabels:
     Xtest = load_sparse_csr(args.testFeatures)
     Ytest = load_sparse_csr(args.testLabels)
-    classif.predict(Xtest, Ytest)
+    test_scores = classif.predict(Xtest, Ytest)
+    print 'testing average f1', np.mean([score[0] for score in test_scores])
+    print 'testing average precision', np.mean([score[1] for score in test_scores])
+    print 'testing average recall', np.mean([score[2] for score in test_scores])
 
 

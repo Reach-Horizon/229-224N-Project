@@ -2,7 +2,7 @@
 
 """A custom OneVsRest classifier for multilabel classification
    with skewed label distributions."""
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, precision_score, recall_score
 from scipy.sparse import issparse
 import numpy as np
 
@@ -20,6 +20,7 @@ class OneVsRest():
 
         num_labels = Y.shape[1]
 
+        results = []
         for k in range(num_labels):
             # for each class
 
@@ -49,9 +50,10 @@ class OneVsRest():
 
             # print out the f1 for fit
             my_Y_pred = c.predict(my_X)
-            print 'f1 for label %s: %s' % (k, f1_score(my_Y, my_Y_pred, average = 'macro'))
+            results += [(f1_score(my_Y, my_Y_pred, average = 'macro'), precision_score(my_Y, my_Y_pred), recall_score(my_Y, my_Y_pred))]
 
         print 'Finished training.'
+        return results
 
     def predict(self, new_X, new_Y):
         print 'Starting prediction...'
@@ -61,10 +63,14 @@ class OneVsRest():
 
         num_labels = new_Y.shape[1]
 
+        results = []
         for k in range(num_labels):
             c = self.classifiers[k]
 
-            Y_pred = c.predict(new_X)
+            my_Y_pred = c.predict(new_X)
 
             my_Y = np.squeeze(np.asarray(new_Y[:,k]))
-            print 'f1 for label %s: %s' % (k, f1_score(my_Y, Y_pred, average = 'macro'))
+
+            results += [(f1_score(my_Y, my_Y_pred, average = 'macro'), precision_score(my_Y, my_Y_pred), recall_score(my_Y, my_Y_pred))]
+
+        return results

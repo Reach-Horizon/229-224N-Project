@@ -37,14 +37,16 @@ for label_idx in indices_of_smallest_counts:
         # we can no longer find this number of unique examples for this label, take whatever we can get
         test_indices = test_indices.union(candidate_test_indices)
         logging.critical("cannot find sufficient unique examples for test set for label %s" % label_idx)
-    test_indices = test_indices.union(random.sample(candidate_test_indices, min_num_test_examples_per_label))
+    else:
+        test_indices = test_indices.union(random.sample(candidate_test_indices, min_num_test_examples_per_label))
 
     candidate_val_indices = set(pos_indices.tolist()) - test_indices - val_indices
     if len(candidate_val_indices) < min_num_val_examples_per_label:
         # we can no longer find this number of unique examples for this label, take whatever we can get
         val_indices = val_indices.union(candidate_val_indices)
         logging.critical("cannot find sufficient unique examples for validation set for label %s" % label_idx)
-    val_indices = val_indices.union(random.sample(candidate_val_indices, min_num_val_examples_per_label))
+    else:
+        val_indices = val_indices.union(random.sample(candidate_val_indices, min_num_val_examples_per_label))
 
 all_indices = set(range(0, X.shape[0]))
 train_indices = list(all_indices - test_indices - val_indices)

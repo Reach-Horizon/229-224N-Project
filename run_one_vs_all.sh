@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-top_labels=10
+top_labels=30
 min_count=100
 max_count=200
 cutoff=2
