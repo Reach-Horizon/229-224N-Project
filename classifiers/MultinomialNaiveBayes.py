@@ -34,7 +34,7 @@ class MultinomialNaiveBayes(Classifier):
 		print 'Finished Training'
 
 	def predict(self, testFeatures, testLabels, numSamples):
-		super(MultinomialNaiveBayes, self).predict(testFeatures, testLabels, numSamples)
+		super(MultinomialNaiveBayes, self).setUpPredict(testFeatures, testLabels, numSamples)
 		outputTest	= self.classifier.predict(self.testFeatures)
 		outputTrain = self.classifier.predict(self.trainFeatures)
 		print 'F1 Score Test: ', f1_score(self.testLabels, outputTest, average = 'macro')

@@ -12,6 +12,9 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 import argparse
 from Classifier import Classifier
+from sklearn.svm import LinearSVC
+from sklearn.svm import NuSVC
+import pdb
 
 def printDebug(posts, trueLabels, outputLabels):
 		"""Compares true output vs. predicted output."""
@@ -29,17 +32,26 @@ class LinearSVM(Classifier):
 		#Declare classifier specific to implementation; probability = True to
 		#avoid weird attribute error
 		self.classifier = OneVsRestClassifier(SVC(kernel = 'linear', probability = True))
+		self.classifierpoly = OneVsRestClassifier(SVC(kernel = 'poly', probability = True))
+		self.classifierrbf = OneVsRestClassifier(SVC(kernel = 'rbf',probability = True))
+		
 	def train(self):
 		print 'Train Features Shape: ', self.trainFeatures.shape
 		print 'Train Label Shape: ', self.trainLabels.shape
 		print 'Starting Training'
 		self.classifier.fit(self.trainFeatures, self.trainLabels) 
+		self.classifierpoly.fit(self.trainFeatures, self.trainLabels)
+		self.classifierrbf.fit(self.trainFeatures, self.trainLabels)
 		print 'Finished Training'
+		#pdb.set_trace()
 
 	def predict(self, testFeatures, testLabels, numSamples):
-		super(LinearSVM, self).predict(testFeatures, testLabels, numSamples)
-		outputTest	= self.classifier.predict(self.testFeatures)
+		super(LinearSVM, self).setUpPredict(testFeatures, testLabels, numSamples)
+		outputTestlinear = self.classifier.predict(self.testFeatures)
+		outputTestpoly = self.classifierpoly.predict(self.testFeatures)
+		outputTestrbf = self.classifierrbf.predict(self.testFeatures)
 		outputTrain = self.classifier.predict(self.trainFeatures)
-		print 'F1 Score Test: ', f1_score(self.testLabels, outputTest, average = 'macro')
+		pdb.set_trace()
+		print 'F1 Score Test: ', f1_score(self.testLabels, outputTestLinear, average = 'macro')
 		print 'F1 Score Train: ', f1_score(self.trainLabels, outputTrain, average = 'macro')
 
