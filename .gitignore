@@ -9,3 +9,4 @@ full_data/
 sample_data/
 *.pickle
 *.bz2
+experiments/
