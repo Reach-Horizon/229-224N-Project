@@ -5,7 +5,7 @@ min_count=100
 max_count=200
 cutoff=2
 
-set prefix=top${top_labels}min${min_count}
+prefix=top${top_labels}min${min_count}
 
 mkdir experiments
 
