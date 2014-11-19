@@ -42,7 +42,7 @@ def printDebug(posts, trueIndexList, output, allLabels):
 
 class BernoulliNaiveBayes(Classifier):
 
-	def __init__(self, trainFeatures, trainLabels, numSamples, labels):
+	def __init__(self, trainFeatures, trainLabels, labels, numSamples = None):
 		Classifier.__init__(self, trainFeatures, trainLabels, numSamples, labels)
 
 		#Declare classifier specific to implementation
@@ -56,7 +56,7 @@ class BernoulliNaiveBayes(Classifier):
 		self.classifier.fit(self.trainFeatures, self.trainLabels) 
 		print 'Finished Training'	
 
-	def predict(self, testFeatures, testLabels, numSamples):
+	def predict(self, testFeatures, testLabels, numSamples = None):
 		super(BernoulliNaiveBayes, self).setUpPredict(testFeatures, testLabels, numSamples)
 		outputTest	= self.classifier.predict(self.testFeatures)
 		outputTrain = self.classifier.predict(self.trainFeatures)

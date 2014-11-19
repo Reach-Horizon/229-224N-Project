@@ -22,7 +22,7 @@ def printDebug(posts, trueLabels, outputLabels):
 
 class MultinomialNaiveBayes(Classifier):
 
-	def __init__(self, trainFeatures, trainLabels, numSamples, labels):
+	def __init__(self, trainFeatures, trainLabels, labels, numSamples = None):
 		Classifier.__init__(self, trainFeatures, trainLabels, numSamples, labels)
 		self.classifier = OneVsRestClassifier(MultinomialNB())
 
@@ -33,7 +33,7 @@ class MultinomialNaiveBayes(Classifier):
 		self.classifier.fit(self.trainFeatures, self.trainLabels) 
 		print 'Finished Training'
 
-	def predict(self, testFeatures, testLabels, numSamples):
+	def predict(self, testFeatures, testLabels, numSamples = None):
 		super(MultinomialNaiveBayes, self).setUpPredict(testFeatures, testLabels, numSamples)
 		outputTest	= self.classifier.predict(self.testFeatures)
 		outputTrain = self.classifier.predict(self.trainFeatures)

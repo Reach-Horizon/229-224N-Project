@@ -26,7 +26,7 @@ def printDebug(posts, trueLabels, outputLabels):
 
 class LinearSVM(Classifier):
 
-	def __init__(self, trainFeatures, trainLabels, numSamples, labels):
+	def __init__(self, trainFeatures, trainLabels, labels, numSamples = None):
 		Classifier.__init__(self, trainFeatures, trainLabels, numSamples, labels)
 
 		#Declare classifier specific to implementation; probability = True to
@@ -45,7 +45,7 @@ class LinearSVM(Classifier):
 		print 'Finished Training'
 		#pdb.set_trace()
 
-	def predict(self, testFeatures, testLabels, numSamples):
+	def predict(self, testFeatures, testLabels, numSamples = None):
 		super(LinearSVM, self).setUpPredict(testFeatures, testLabels, numSamples)
 		outputTestlinear = self.classifier.predict(self.testFeatures)
 		outputTestpoly = self.classifierpoly.predict(self.testFeatures)
