@@ -56,7 +56,7 @@ for feature in args.features:
     else:
         X = hstack((X, extractor.extract_all(examples_generator)))
 
-if BigramFeature.vocabulary != None:
+if BigramFeature.vocabulary != None and not args.ngrams_vocab:
     logging.info('dumping vocabulary to disk')
     with open(args.out_file + '.vocab.json', 'wb') as f:
         json.dump(BigramFeature.vocabulary, f)

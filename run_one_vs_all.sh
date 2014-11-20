@@ -53,7 +53,7 @@ then
   experiments/${prefix}.test.bz2 \
   experiments/${prefix}.test \
   $features
- fi
+fi
 
 echo "train and testing 1 vs rest using validation set"
 python classifiers/onevsrest_test.py \

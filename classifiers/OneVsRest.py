@@ -13,7 +13,7 @@ class OneVsRest():
         self.Clf = Clf
         self.kwargs = kwargs
 
-    def train(self, X, Y):
+    def train(self, X, Y, fair_sampling=True):
         print 'Starting training...'
 
         if issparse(Y): # convert Y to a dense matrix because numpy/scipy is too dumb to deal with sparse Y
@@ -36,8 +36,9 @@ class OneVsRest():
             neg_indices = np.where(my_Y == 0)[0]
 
             # have too many negative examples, so subsample until we have equal number of negative and positive
-            np.random.shuffle(neg_indices)
-            neg_indices = neg_indices[:len(pos_indices)]
+            if fair_sampling:
+                np.random.shuffle(neg_indices)
+                neg_indices = neg_indices[:len(pos_indices)]
 
             # merge the training indices
             train_indices = np.hstack((pos_indices, neg_indices))
