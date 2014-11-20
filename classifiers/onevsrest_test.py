@@ -38,7 +38,10 @@ logging.info('training 1 vs rest with %s' % classif.Clf)
 Xtrain = load_sparse_csr(args.trainFeatures)
 Ytrain = load_sparse_csr(args.trainLabels)
 
-train_scores = classif.train(Xtrain, Ytrain)
+if 'SVM' in args.classifier:
+    train_scores = classif.train(Xtrain, Ytrain, fair_sampling=False)
+else:
+    train_scores = classif.train(Xtrain, Ytrain, fair_sampling=True)
 
 print 'training average f1', np.mean([score[0] for score in train_scores])
 print 'training average precision', np.mean([score[1] for score in train_scores])
