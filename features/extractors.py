@@ -1,9 +1,43 @@
 import os, sys, json, logging
+from collections import Counter
+import numpy as np
+
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
 
 from sklearn.feature_extraction.text import CountVectorizer
+from nltk import word_tokenize
 from util.common import extract_code_sections
+
+class TopLabelCountsFeature(object):
+
+    labels = None
+
+    @classmethod
+    def load_labels_from_file(cls, label_file):
+        with open(label_file) as f:
+            cls.labels = json.load(f)['mapping']
+
+    @classmethod
+    def extract_all(cls, examples):
+        assert cls.labels, 'cannot extract features without labels'
+
+        row_idx = 0
+        feature_matrix = []
+        for example in examples:
+            if row_idx % 10000 == 0:
+                logging.info('processed %s examples' % row_idx)
+            code, noncode = extract_code_sections(example.data['body'])
+            seen_labels = [word.lower() for word in word_tokenize(noncode) if word.lower() in cls.labels]
+            seen_labels +=[word.lower() for word in word_tokenize(example.data['title']) if word.lower() in cls.labels]
+            counter = Counter(seen_labels)
+            feature_vector = [counter[label] for label in cls.labels]
+            feature_matrix += [feature_vector]
+            row_idx += 1
+
+        X = np.array(feature_matrix)
+        return X
+
 
 class BigramFeature(object):
 

@@ -4,12 +4,12 @@ import sys, os
 import numpy as np
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
-from features.common import load_sparse_csr
-
+from util.common import load_sparse_csr
 
 parser = argparse.ArgumentParser(description = 'arguments for classifier tester')
 parser.add_argument('trainFeatures', type = str, help = 'features file for training classifier')
@@ -21,7 +21,7 @@ args = parser.parse_args()
 
 from OneVsRest import OneVsRest
 
-clazz = BernoulliNB
+clazz = LogisticRegression
 
 classif = OneVsRest(clazz)
 

@@ -6,13 +6,14 @@ root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
 
 from util.DataStreamer import DataStreamer
-from features.extractors import BigramFeature
+from features.extractors import BigramFeature, TopLabelCountsFeature
 from util.common import save_sparse_csr, load_sparse_csr
 
 import argparse
 
 supported_features = {
     'ngrams':BigramFeature,
+    'toplabels':TopLabelCountsFeature,
     # add more feature extractors here
     }
 
@@ -25,6 +26,7 @@ parser.add_argument('--ngrams_unigrams', action='store_true', help='use only uni
 parser.add_argument('--ngrams_binarize', action='store_true', help='use only binary indicators for features instead of real counts', default=False)
 parser.add_argument('--ngrams_cutoff', type=int, help='words that occur less than this number of times will be ignored. Default=2', default=2)
 parser.add_argument('--ngrams_vocab', help='vocabulary file for use with bigram feature', default=None)
+parser.add_argument('--top_labels_labels', help='labels file for use with top labels feature', default=None)
 parser.add_argument('features', metavar='Features', type=str, nargs='+',
                    help='Choose between ' + str(supported_features.keys()))
 args = parser.parse_args()
@@ -32,13 +34,18 @@ args = parser.parse_args()
 unsupported_features = set(args.features) - set(supported_features.keys())
 assert len(unsupported_features) == 0, 'do not support features ' + str(unsupported_features)
 
-if args.ngrams_unigrams:
-  ngram_range = (1,1)
-else:
-  ngram_range = (1,2)
-if args.ngrams_vocab:
-    BigramFeature.load_vocabulary_from_file(args.ngrams_vocab)
-BigramFeature.set_vectorizer(ngram_range, args.ngrams_binarize, cutoff=args.ngrams_cutoff)
+if 'ngrams' in args.features:
+    if args.ngrams_unigrams:
+      ngram_range = (1,1)
+    else:
+      ngram_range = (1,2)
+    if args.ngrams_vocab:
+        BigramFeature.load_vocabulary_from_file(args.ngrams_vocab)
+    BigramFeature.set_vectorizer(ngram_range, args.ngrams_binarize, cutoff=args.ngrams_cutoff)
+
+if 'toplabels' in args.features:
+    TopLabelCountsFeature.load_labels_from_file(args.top_labels_labels)
+
 
 X = None
 for feature in args.features:
