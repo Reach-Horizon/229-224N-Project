@@ -2,14 +2,26 @@
 
 split_data=1
 extract_features=1
+transform_features=0
 
-top_labels=100
-min_count=1000
-cutoff=10
-test_fraction=0.15
-val_fraction=0.15
-features='ngrams toplabels'
-classifier=logisticRegression
+# Data collection
+top_labels=100 #how many labels to predict?
+min_count=1000 #how many examples per label at least?
+
+test_fraction=0.15 #how much to use for test
+val_fraction=0.15 #how much to use for tuning
+
+# Feature extraction
+features='ngrams toplabels' # choose between ngrams, toplabels
+cutoff=5 #frequency cutoff for rare ngrams
+
+# Transformation
+transformers='tfidf' # choose between tfidf, lsa (you should probably run tfidf *first* and lsa *last*)
+lsa_size=100
+lsa_iterations=10
+
+# Classification
+classifier=logisticRegression # choose between logisticRegression, bernoulliNB, multinomialNB, linearSVM (rbfSVM doesn't work...)
 
 prefix=top${top_labels}min${min_count}
 
@@ -31,7 +43,7 @@ then
   # the first time will produce a vocab file
   python util/extract_features.py \
   --top_labels_labels experiments/${prefix}.labels.counts.json \
-  --ngrams_unigrams \
+  --ngrams_unigrams --ngrams_binarize \
   --ngrams_cutoff $cutoff \
   experiments/${prefix}.train.bz2 \
   experiments/${prefix}.train \
@@ -56,11 +68,34 @@ then
   $features
 fi
 
-echo "train and testing 1 vs rest using validation set"
-python classifiers/onevsrest_test.py \
-experiments/${prefix}.train.X \
-experiments/${prefix}.train.Y \
---testFeatures experiments/${prefix}.val.X \
---testLabels experiments/${prefix}.val.Y \
---classifier $classifier
+
+if [ $transform_features -eq 1 ]
+then
+  echo "transforming features"
+  python util/transform_features.py \
+  --lsa_dim $lsa_size \
+  --lsa_iter $lsa_iterations \
+  experiments/${prefix}.train.X \
+  experiments/${prefix}.val.X \
+  $transformers
+
+  # the above dumps out .red files, so we have to adjust the names accordingly
+
+  echo "train and testing 1 vs rest using validation set"
+  python classifiers/onevsrest_test.py \
+  experiments/${prefix}.train.X.red \
+  experiments/${prefix}.train.Y \
+  --testFeatures experiments/${prefix}.val.X.red \
+  --testLabels experiments/${prefix}.val.Y \
+  --classifier $classifier
+else
+  echo "train and testing 1 vs rest using validation set"
+  python classifiers/onevsrest_test.py \
+  experiments/${prefix}.train.X \
+  experiments/${prefix}.train.Y \
+  --testFeatures experiments/${prefix}.val.X \
+  --testLabels experiments/${prefix}.val.Y \
+  --classifier $classifier
+fi
+
 
