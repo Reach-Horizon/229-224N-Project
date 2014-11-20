@@ -35,6 +35,7 @@ class TopLabelCountsFeature(object):
             feature_matrix += [feature_vector]
             row_idx += 1
 
+        logging.info('converting label counts to feature matrix')
         X = np.array(feature_matrix)
         return X
 
