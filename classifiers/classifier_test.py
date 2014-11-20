@@ -19,7 +19,7 @@ args = parser.parse_args()
 sys.path.append("../util")
 from DataStreamer import DataStreamer
 
-classif = LinearSVM(args.trainFeatures, args.trainLabels, args.numTrain, args.labels)
+classif = BernoulliNaiveBayes(args.trainFeatures, args.trainLabels, args.numTrain, args.labels)
 classif.train()
 classif.predict(args.testFeatures, args.testLabels, args.numTest)
 

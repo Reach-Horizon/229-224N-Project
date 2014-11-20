@@ -58,7 +58,7 @@ class BernoulliNaiveBayes(Classifier):
 
 	def predict(self, testFeatures, testLabels, numSamples = None):
 		super(BernoulliNaiveBayes, self).setUpPredict(testFeatures, testLabels, numSamples)
-		outputTest	= self.classifier.predict(self.testFeatures)
+		#outputTest	= self.classifier.predict(self.testFeatures)
 		outputTrain = self.classifier.predict(self.trainFeatures)
-		print 'F1 Score Test: ', f1_score(self.testLabels, outputTest, average = 'macro')
+		#print 'F1 Score Test: ', f1_score(self.testLabels, outputTest, average = 'macro')
 		print 'F1 Score Train: ', f1_score(self.trainLabels, outputTrain, average = 'macro')

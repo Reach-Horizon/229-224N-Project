@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-"""A naive bayes classifier for our multilabel classification problem."""
+"""An SVM classifier for our multilabel classification problem."""
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.datasets import make_multilabel_classification
 from sklearn.svm import SVC
 from sklearn.feature_extraction.text import CountVectorizer, HashingVectorizer
-from sklearn.preprocessing import MultiLabelBinarizer
+#from sklearn.preprocessing import MultiLabelBinarizer
 import cPickle as pickle
 import sys
 from sklearn.metrics import accuracy_score

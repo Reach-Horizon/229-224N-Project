@@ -5,7 +5,7 @@ Defines skeleton constructor, training, and prediction methods."""
 
 import ast
 import sys, os
-from sklearn.preprocessing import MultiLabelBinarizer
+#from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics import f1_score
 import numpy as np
@@ -39,8 +39,8 @@ class Classifier(object):
         pass
 
     def setUpPredict(self, testFeatures, testLabels, numSamples = None):
-        matX = common.load_sparse_csr("../features/" + testFeatures)
-        matY = common.load_sparse_csr("../features/" + testLabels)
+        matX = common.load_sparse_csr("../experiments/" + testFeatures)
+        matY = common.load_sparse_csr("../experiments/" + testLabels)
         if numSamples == None:
             numSamples = matX.shape[0] #Update numSamples to be total num examples
 
