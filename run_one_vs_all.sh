@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
 split_data=0
-extract_features=0
+extract_features=1
 
 top_labels=10
 min_count=100
 cutoff=2
 test_fraction=0.15
 val_fraction=0.15
-features='toplabels'
+features='ngrams toplabels'
 
 prefix=top${top_labels}min${min_count}
 
@@ -31,6 +31,7 @@ then
   # the first time will produce a vocab file
   python util/extract_features.py \
   --top_labels_labels experiments/${prefix}.labels.counts.json \
+  --ngrams_unigrams --ngrams_binarize \
   --ngrams_cutoff $cutoff \
   experiments/${prefix}.train.bz2 \
   experiments/${prefix}.train \
@@ -39,6 +40,7 @@ then
   # the other times we use the produced vocab file
   python util/extract_features.py \
   --top_labels_labels experiments/${prefix}.labels.counts.json \
+  --ngrams_unigrams --ngrams_binarize \
   --ngrams_cutoff $cutoff \
   --ngrams_vocab experiments/${prefix}.train.vocab.json \
   experiments/${prefix}.val.bz2 \
@@ -46,6 +48,7 @@ then
   $features
 
   python util/extract_features.py \--top_labels_labels experiments/${prefix}.labels.counts.json \
+  --ngrams_unigrams --ngrams_binarize \
   --ngrams_cutoff $cutoff \
   --ngrams_vocab experiments/${prefix}.train.vocab.json \
   experiments/${prefix}.test.bz2 \

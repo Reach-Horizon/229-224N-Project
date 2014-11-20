@@ -8,9 +8,10 @@ import numpy as np
 
 class OneVsRest():
 
-    def __init__(self, Clf):
+    def __init__(self, Clf, **kwargs):
         self.classifiers = []
         self.Clf = Clf
+        self.kwargs = kwargs
 
     def train(self, X, Y):
         print 'Starting training...'
@@ -25,7 +26,7 @@ class OneVsRest():
             # for each class
 
             Clf = self.Clf
-            c = Clf()
+            c = Clf(**self.kwargs)
 
             # get the Ys corresponding to this class
             my_Y = np.squeeze(np.asarray(Y[:,k]))

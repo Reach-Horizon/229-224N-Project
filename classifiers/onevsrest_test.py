@@ -23,7 +23,7 @@ from OneVsRest import OneVsRest
 
 clazz = LogisticRegression
 
-classif = OneVsRest(clazz)
+classif = OneVsRest(clazz, fit_intercept=True, penalty='l1', C=0.1)
 
 print 'training 1 vs rest with', clazz
 

@@ -61,4 +61,4 @@ if BigramFeature.vocabulary != None:
     with open(args.out_file + '.vocab.json', 'wb') as f:
         json.dump(BigramFeature.vocabulary, f)
 
-save_sparse_csr(args.out_file + '.X', X)
+save_sparse_csr(args.out_file + '.X', X.tocsr())
