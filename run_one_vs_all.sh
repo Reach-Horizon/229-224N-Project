@@ -9,6 +9,7 @@ cutoff=10
 test_fraction=0.15
 val_fraction=0.15
 features='ngrams toplabels'
+classifier=logisticRegression
 
 prefix=top${top_labels}min${min_count}
 
@@ -61,5 +62,5 @@ experiments/${prefix}.train.X \
 experiments/${prefix}.train.Y \
 --testFeatures experiments/${prefix}.val.X \
 --testLabels experiments/${prefix}.val.Y \
---classifier logisticRegression
+--classifier $classifier
 

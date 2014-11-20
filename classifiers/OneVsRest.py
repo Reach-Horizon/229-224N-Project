@@ -5,6 +5,7 @@
 from sklearn.metrics import f1_score, precision_score, recall_score
 from scipy.sparse import issparse
 import numpy as np
+import logging
 
 class OneVsRest():
 
@@ -24,7 +25,8 @@ class OneVsRest():
         results = []
         for k in range(num_labels):
             # for each class
-
+            logging.info('training classifier for class %s' % k)
+            
             Clf = self.Clf
             c = Clf(**self.kwargs)
 
