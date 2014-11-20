@@ -2,7 +2,12 @@
 
 split_data=1
 extract_features=1
-transform_features=0
+transform_features=1
+classify_on_transformed_features=1
+
+features='ngrams toplabels' # choose between ngrams, toplabels
+transformers='tfidf' # choose between tfidf, lsa (you should probably run tfidf *first* and lsa *last*)
+classifier=logisticRegression # choose between logisticRegression, bernoulliNB, multinomialNB, linearSVM (rbfSVM doesn't work...)
 
 # Data collection
 top_labels=100 #how many labels to predict?
@@ -12,16 +17,11 @@ test_fraction=0.15 #how much to use for test
 val_fraction=0.15 #how much to use for tuning
 
 # Feature extraction
-features='ngrams toplabels' # choose between ngrams, toplabels
 cutoff=5 #frequency cutoff for rare ngrams
 
 # Transformation
-transformers='tfidf' # choose between tfidf, lsa (you should probably run tfidf *first* and lsa *last*)
 lsa_size=100
 lsa_iterations=10
-
-# Classification
-classifier=logisticRegression # choose between logisticRegression, bernoulliNB, multinomialNB, linearSVM (rbfSVM doesn't work...)
 
 prefix=top${top_labels}min${min_count}
 
@@ -78,9 +78,12 @@ then
   experiments/${prefix}.train.X \
   experiments/${prefix}.val.X \
   $transformers
+fi
 
+
+if [ $classify_on_transformed_features -eq 1 ]
+then
   # the above dumps out .red files, so we have to adjust the names accordingly
-
   echo "train and testing 1 vs rest using validation set"
   python classifiers/onevsrest_test.py \
   experiments/${prefix}.train.X.red \
