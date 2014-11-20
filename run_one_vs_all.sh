@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-split_data=0
+split_data=1
 extract_features=1
 
-top_labels=10
-min_count=100
-cutoff=2
+top_labels=100
+min_count=1000
+cutoff=10
 test_fraction=0.15
 val_fraction=0.15
 features='ngrams toplabels'
@@ -13,7 +13,6 @@ features='ngrams toplabels'
 prefix=top${top_labels}min${min_count}
 
 mkdir experiments
-
 
 if [ $split_data -eq 1 ]
 then
@@ -31,7 +30,7 @@ then
   # the first time will produce a vocab file
   python util/extract_features.py \
   --top_labels_labels experiments/${prefix}.labels.counts.json \
-  --ngrams_unigrams --ngrams_binarize \
+  --ngrams_unigrams \
   --ngrams_cutoff $cutoff \
   experiments/${prefix}.train.bz2 \
   experiments/${prefix}.train \
@@ -56,10 +55,10 @@ then
   $features
  fi
 
-echo "train and testing 1 vs rest"
+echo "train and testing 1 vs rest using validation set"
 python classifiers/onevsrest_test.py \
 experiments/${prefix}.train.X \
 experiments/${prefix}.train.Y \
---testFeatures experiments/${prefix}.test.X \
---testLabels experiments/${prefix}.test.Y
+--testFeatures experiments/${prefix}.val.X \
+--testLabels experiments/${prefix}.val.Y
 
