@@ -60,5 +60,6 @@ python classifiers/onevsrest_test.py \
 experiments/${prefix}.train.X \
 experiments/${prefix}.train.Y \
 --testFeatures experiments/${prefix}.val.X \
---testLabels experiments/${prefix}.val.Y
+--testLabels experiments/${prefix}.val.Y \
+--classifier logisticRegression
 
