@@ -45,18 +45,20 @@ def load_sparse_csr(filename):
 
   return mat
 
+import string
 def extract_code_sections(mixed):
   """
   splits a mixed text into a list of noncode sections and a list of code sections
   """
-  noncode = mixed
+  noncode = filter(lambda x: x in string.printable, mixed)
 
   soup = BeautifulSoup(mixed)
   code = []
   for e in soup.find_all('pre'):
     if e.text:
       code += [e.text]
-    noncode = noncode.replace(str(e), '')
+    e_str = filter(lambda x: x in string.printable, str(e))
+    noncode = noncode.replace(e_str, '')
 
   noncode = BeautifulSoup(noncode).text
 
