@@ -27,7 +27,7 @@ parser.add_argument('trainFeatures', type = str, help = 'features file for train
 parser.add_argument('trainLabels', type = str, help = 'labels file for training classifier')
 parser.add_argument('--testFeatures', type = str, help = 'data file for testing classifier')
 parser.add_argument('--testLabels', type = str, help = 'labels file for testing classifier')
-parser.add_argument('--classifier', type = str, default='logistcRegression', help = 'the classifier to use. Default=logisticRegression. Supported = ' + str(supported.keys()))
+parser.add_argument('--classifier', type = str, default='logisticRegression', help = 'the classifier to use. Default=logisticRegression. Supported = ' + str(supported.keys()))
 parser.add_argument('classifierOptions', metavar='Options', type=str, nargs='?', help='eg. C=0.1', default=[])
 args = parser.parse_args()
 
