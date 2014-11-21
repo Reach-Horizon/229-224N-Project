@@ -6,7 +6,7 @@ root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
 
 from util.DataStreamer import DataStreamer
-from features.extractors import BigramFeature, TopLabelCountsFeature, BigramFeatureTitle
+from features.extractors import BigramFeature, TopLabelCountsFeature, BigramFeatureTitle, BigramFeatureCode
 from util.common import save_sparse_csr, load_sparse_csr
 
 import argparse
@@ -14,6 +14,7 @@ import argparse
 supported_features = {
     'ngrams':BigramFeature,
     'ngramsTitle':BigramFeatureTitle,
+    'ngramsCode':BigramFeatureCode,
     'topLabels':TopLabelCountsFeature,
     # add more feature extractors here
     }
@@ -31,6 +32,10 @@ parser.add_argument('--ngrams_title_unigrams', action='store_true', help='use on
 parser.add_argument('--ngrams_title_binarize', action='store_true', help='use only binary indicators for features instead of real counts', default=False)
 parser.add_argument('--ngrams_title_cutoff', type=int, help='words that occur less than this number of times will be ignored. Default=2', default=2)
 parser.add_argument('--ngrams_title_vocab', help='vocabulary file for use with bigram feature', default=None)
+parser.add_argument('--ngrams_code_unigrams', action='store_true', help='use only unigrams instead', default=False)
+parser.add_argument('--ngrams_code_binarize', action='store_true', help='use only binary indicators for features instead of real counts', default=False)
+parser.add_argument('--ngrams_code_cutoff', type=int, help='words that occur less than this number of times will be ignored. Default=2', default=2)
+parser.add_argument('--ngrams_code_vocab', help='vocabulary file for use with bigram feature', default=None)
 parser.add_argument('--top_labels_labels', help='labels file for use with top labels feature', default=None)
 parser.add_argument('features', metavar='Features', type=str, nargs='+',
                    help='Choose between ' + str(supported_features.keys()))
@@ -57,6 +62,15 @@ if 'ngramsTitle' in args.features:
         BigramFeatureTitle.load_vocabulary_from_file(args.ngrams_title_vocab)
     BigramFeatureTitle.set_vectorizer(ngram_title_range, args.ngrams_title_binarize, cutoff=args.ngrams_title_cutoff)
 
+if 'ngramsCode' in args.features:
+    if args.ngrams_code_unigrams:
+      ngram_code_range = (1,1)
+    else:
+      ngram_code_range = (1,2)
+    if args.ngrams_code_vocab:
+        BigramFeatureCode.load_vocabulary_from_file(args.ngrams_code_vocab)
+    BigramFeatureCode.set_vectorizer(ngram_code_range, args.ngrams_code_binarize, cutoff=args.ngrams_code_cutoff)
+
 
 if 'topLabels' in args.features:
     TopLabelCountsFeature.load_labels_from_file(args.top_labels_labels)
@@ -80,5 +94,11 @@ if BigramFeatureTitle.vocabulary != None and not args.ngrams_title_vocab:
     logging.info('dumping title vocabulary to disk')
     with open(args.out_file + '.title.vocab.json', 'wb') as f:
         json.dump(BigramFeatureTitle.vocabulary, f)
+
+if BigramFeatureCode.vocabulary != None and not args.ngrams_code_vocab:
+    logging.info('dumping code vocabulary to disk')
+    with open(args.out_file + '.code.vocab.json', 'wb') as f:
+        json.dump(BigramFeatureCode.vocabulary, f)
+
 
 save_sparse_csr(args.out_file + '.X', X.tocsr())

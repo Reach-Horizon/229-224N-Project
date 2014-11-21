@@ -62,4 +62,4 @@ def extract_code_sections(mixed):
 
   noncode = BeautifulSoup(noncode).text
 
-  return code, noncode
+  return "\n".join(code), noncode

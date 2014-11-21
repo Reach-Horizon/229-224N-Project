@@ -2,10 +2,10 @@
 
 split_data=1
 extract_features=1
-transform_features=0
+transform_features=1
 classify_on_transformed_features=0
 
-features='ngramsTitle topLabels' # choose between ngrams, ngramsTitle, topLabels
+features='ngramsCode ngramsTitle topLabels' # choose between ngrams, ngramsTitle, ngramsCode, topLabels
 transformers='tfidf' # choose between tfidf, lsa (you should probably run tfidf *first* and lsa *last*)
 classifier=logisticRegression # choose between logisticRegression, bernoulliNB, multinomialNB, linearSVM (rbfSVM doesn't work...)
 
@@ -48,6 +48,8 @@ then
   --ngrams_title_unigrams \
   --ngrams_title_binarize \
   --ngrams_title_cutoff 1 \
+  --ngrams_code_binarize \
+  --ngrams_code_cutoff $cutoff \
   experiments/${prefix}.train.bz2 \
   experiments/${prefix}.train \
   $features
@@ -62,7 +64,10 @@ then
   --ngrams_title_binarize \
   --ngrams_title_cutoff 1 \
   --ngrams_title_vocab experiments/${prefix}.train.title.vocab.json \
-  experiments/${prefix}.val.bz2 \
+  --ngrams_code_binarize \
+  --ngrams_code_cutoff $cutoff \
+  --ngrams_code_vocab experiments/${prefix}.train.code.vocab.json \
+    experiments/${prefix}.val.bz2 \
   experiments/${prefix}.val \
   $features
 
@@ -74,6 +79,9 @@ then
   --ngrams_title_binarize \
   --ngrams_title_cutoff 1 \
   --ngrams_title_vocab experiments/${prefix}.train.title.vocab.json \
+  --ngrams_code_binarize \
+  --ngrams_code_cutoff $cutoff \
+  --ngrams_code_vocab experiments/${prefix}.train.code.vocab.json \
   experiments/${prefix}.test.bz2 \
   experiments/${prefix}.test \
   $features

@@ -112,3 +112,39 @@ class BigramFeatureTitle(BigramFeature):
         documents = [example.data['title'] for example in examples]
         cls.vectorizer.fit(documents)
         return cls.vectorizer.vocabulary_
+
+
+class BigramFeatureCode(BigramFeature):
+
+    @classmethod
+    def extract_all(cls, examples):
+        assert cls.vectorizer, 'cannot extract features without vectorizer'
+
+        documents = []
+        row_idx = 0
+        for example in examples:
+            if row_idx % 10000 == 0:
+                logging.info('processed %s examples' % row_idx)
+            code, noncode = extract_code_sections(example.data['body'])
+            documents += [code]
+            row_idx += 1
+
+        logging.info('vectorizing documents')
+        if cls.vocabulary:
+            X = cls.vectorizer.transform(documents)
+        else:
+            X = cls.vectorizer.fit_transform(documents)
+            cls.vocabulary = cls.vectorizer.vocabulary_
+        return X
+
+    @classmethod
+    def extract_vocabulary(cls, examples):
+        assert cls.vectorizer, 'cannot extract features without vectorizer'
+
+        documents = []
+        for example in examples:
+            code, noncode = extract_code_sections(example.data['body'])
+            documents += [code]
+
+        cls.vectorizer.fit(documents)
+        return cls.vectorizer.vocabulary_
