@@ -63,8 +63,24 @@ class BigramFeature(object):
             cls.vocabulary = json.load(f)
 
     @classmethod
-    def set_vectorizer(cls, ngram_range=(1,1), binary=True, stop_words='english', lowercase=True, cutoff=2):
-        cls.vectorizer = CountVectorizer(ngram_range=ngram_range, binary=binary, stop_words='english', lowercase=True, min_df=cutoff, vocabulary=cls.vocabulary, tokenizer=tokenizer, token_pattern=r"\b\w+\b")
+    def set_vectorizer(cls, ngram_range=(1,1), binary=True, stop_words='english', lowercase=True, cutoff=2, vectorizer_type=CountVectorizer):
+        if vectorizer_type == CountVectorizer:
+            cls.vectorizer = CountVectorizer(ngram_range=ngram_range,
+                                             binary=binary,
+                                             stop_words='english',
+                                             lowercase=True,
+                                             min_df=cutoff,
+                                             vocabulary=cls.vocabulary,
+                                             tokenizer=tokenizer,
+                                             token_pattern=r"\b\w+\b")
+        else:
+            cls.vectorizer = HashingVectorizer(ngram_range=ngram_range,
+                                               binary=binary,
+                                               stop_words='english',
+                                               lowercase=True,
+                                               tokenizer=tokenizer,
+                                               token_pattern=r"\b\w+\b",
+                                               non_negative=True)
 
     @classmethod
     def extract_all(cls, examples):
@@ -80,7 +96,7 @@ class BigramFeature(object):
             row_idx += 1
 
         logging.info('vectorizing documents')
-        if cls.vocabulary:
+        if cls.vocabulary or isinstance(cls.vectorizer, HashingVectorizer):
             X = cls.vectorizer.transform(documents)
         else:
             X = cls.vectorizer.fit_transform(documents)
@@ -112,7 +128,7 @@ class BigramFeatureTitle(BigramFeature):
         documents = [example.data['title'] for example in examples]
 
         logging.info('vectorizing document titles')
-        if cls.vocabulary:
+        if cls.vocabulary or isinstance(cls.vectorizer, HashingVectorizer):
             X = cls.vectorizer.transform(documents)
         else:
             X = cls.vectorizer.fit_transform(documents)
@@ -146,7 +162,7 @@ class BigramFeatureCode(BigramFeature):
             row_idx += 1
 
         logging.info('vectorizing documents')
-        if cls.vocabulary:
+        if cls.vocabulary or isinstance(cls.vectorizer, HashingVectorizer):
             X = cls.vectorizer.transform(documents)
         else:
             X = cls.vectorizer.fit_transform(documents)

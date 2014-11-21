@@ -3,10 +3,10 @@
 split_data=1
 extract_features=1
 transform_features=1
-classify_on_transformed_features=0
+classify_on_transformed_features=1
 
-features='ngramsCode ngramsTitle topLabels' # choose between ngrams, ngramsTitle, ngramsCode, topLabels
-transformers='tfidf' # choose between tfidf, lsa (you should probably run tfidf *first* and lsa *last*)
+features='topLabels ngramsTitle ngrams' # choose between ngrams, ngramsTitle, ngramsCode, topLabels
+transformers='chi2 tfidf' # choose between tfidf, lsa (you should probably run tfidf *first* and lsa *last*)
 classifier=logisticRegression # choose between logisticRegression, bernoulliNB, multinomialNB, linearSVM (rbfSVM doesn't work...)
 
 # Data collection
@@ -18,10 +18,12 @@ val_fraction=0.15 #how much to use for tuning
 
 # Feature extraction
 cutoff=5 #frequency cutoff for rare ngrams
+vectorizer_type=hashing
 
 # Transformation
 lsa_size=100
 lsa_iterations=10
+chi2_size=20
 
 prefix=top${top_labels}min${min_count}
 
@@ -50,6 +52,7 @@ then
   --ngrams_title_cutoff 1 \
   --ngrams_code_binarize \
   --ngrams_code_cutoff $cutoff \
+  --vectorizer_type $vectorizer_type \
   experiments/${prefix}.train.bz2 \
   experiments/${prefix}.train \
   $features
@@ -67,6 +70,7 @@ then
   --ngrams_code_binarize \
   --ngrams_code_cutoff $cutoff \
   --ngrams_code_vocab experiments/${prefix}.train.code.vocab.json \
+  --vectorizer_type $vectorizer_type \
     experiments/${prefix}.val.bz2 \
   experiments/${prefix}.val \
   $features
@@ -82,6 +86,7 @@ then
   --ngrams_code_binarize \
   --ngrams_code_cutoff $cutoff \
   --ngrams_code_vocab experiments/${prefix}.train.code.vocab.json \
+  --vectorizer_type $vectorizer_type \
   experiments/${prefix}.test.bz2 \
   experiments/${prefix}.test \
   $features
@@ -94,7 +99,9 @@ then
   python util/transform_features.py \
   --lsa_dim $lsa_size \
   --lsa_iter $lsa_iterations \
+  --chi2_dim $chi2_size \
   experiments/${prefix}.train.X \
+  experiments/${prefix}.train.Y \
   experiments/${prefix}.val.X \
   $transformers
 fi
