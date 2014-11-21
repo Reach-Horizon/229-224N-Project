@@ -28,10 +28,17 @@ parser.add_argument('trainLabels', type = str, help = 'labels file for training 
 parser.add_argument('--testFeatures', type = str, help = 'data file for testing classifier')
 parser.add_argument('--testLabels', type = str, help = 'labels file for testing classifier')
 parser.add_argument('--classifier', type = str, help = 'the classifier to use. Default=logisticRegression. Supported = ' + str(supported.keys()))
+parser.add_argument('classifierOptions', metavar='Options', type=str, nargs='?', help='eg. C=0.1', default=[])
 args = parser.parse_args()
 
+options = {}
+for option in args.classifierOptions:
+    terms = option.split('=')
+    options[terms[0]] = float(options[terms[1]])
 
 classif = supported[args.classifier]
+for idx, classifier in enumerate(classif.classifiers):
+    classif.classifiers[idx].set_params(options)
 
 logging.info('training 1 vs rest with %s' % classif.Clf)
 

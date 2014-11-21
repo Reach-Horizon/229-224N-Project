@@ -4,6 +4,7 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.decomposition import TruncatedSVD
 from scipy.sparse import csr_matrix
+from scipy.sparse import hstack
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
@@ -41,15 +42,29 @@ Xtest = load_sparse_csr(args.Xtest)
 
 for transform in args.transforms:
     transform = supported_transforms[transform]
-    logging.info('applying ' + str(transform) + 'to training set')
+    logging.info('applying ' + str(transform))
     if transform == supported_transforms['chi2']:
         if Ytrain == None:
             Ytrain = load_sparse_csr(args.Ytrain)
-        Xtrain = transform.fit_transform(Xtrain, Ytrain)
+        Xreduced = None
+        XreducedTest = None
+        for col in range(Ytrain.shape[1]):
+            slice = transform.fit_transform(Xtrain, Ytrain[:, col].todense())
+            if Xreduced == None:
+                Xreduced = slice
+            else:
+                Xreduced = hstack((Xreduced, slice))
+            slice = transform.transform(Xtest)
+            if XreducedTest == None:
+                XreducedTest = slice
+            else:
+                XreducedTest = hstack((XreducedTest, slice))
+        Xtrain = Xreduced
+        Xtest = XreducedTest
     else:
         Xtrain = transform.fit_transform(Xtrain)
-    logging.info('applying ' + str(transform) + 'to test set')
-    Xtest = transform.transform(Xtest)
+        Xtest = transform.transform(Xtest)
+
 
 logging.info('saving trainng set')
 save_sparse_csr(args.Xtrain + '.red', csr_matrix(Xtrain))
