@@ -1,13 +1,22 @@
 import os, sys, json, logging
 from collections import Counter
 import numpy as np
+import re
+from string import punctuation
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
 
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, HashingVectorizer
 from nltk import word_tokenize
 from util.common import extract_code_sections
+
+tag_re = '[' + punctuation.replace('#', '').replace('+', '').replace('_', '').replace('-', '') + '0-9]+'
+tag_re = re.compile(tag_re)
+
+def tokenizer(s):
+    return tag_re.sub(' ', s).split()
+
 
 class TopLabelCountsFeature(object):
 
@@ -28,8 +37,9 @@ class TopLabelCountsFeature(object):
             if row_idx % 10000 == 0:
                 logging.info('processed %s examples' % row_idx)
             code, noncode = extract_code_sections(example.data['body'])
-            seen_labels = [word.lower() for word in word_tokenize(noncode) if word.lower() in cls.labels]
-            seen_labels +=[word.lower() for word in word_tokenize(example.data['title']) if word.lower() in cls.labels]
+
+            tokens = tokenizer(noncode + " " + example.data['title'])
+            seen_labels = [word.lower() for word in tokens if word.lower() in cls.labels]
             counter = Counter(seen_labels)
             feature_vector = [counter[label] for label in cls.labels]
             feature_matrix += [feature_vector]
@@ -54,7 +64,7 @@ class BigramFeature(object):
 
     @classmethod
     def set_vectorizer(cls, ngram_range=(1,1), binary=True, stop_words='english', lowercase=True, cutoff=2):
-        cls.vectorizer = CountVectorizer(ngram_range=ngram_range, binary=binary, stop_words='english', lowercase=True, min_df=cutoff, vocabulary=cls.vocabulary)
+        cls.vectorizer = CountVectorizer(ngram_range=ngram_range, binary=binary, stop_words='english', lowercase=True, min_df=cutoff, vocabulary=cls.vocabulary, tokenizer=tokenizer, token_pattern=r"\b\w+\b")
 
     @classmethod
     def extract_all(cls, examples):
@@ -92,6 +102,9 @@ class BigramFeature(object):
 
 class BigramFeatureTitle(BigramFeature):
 
+    vocabulary = None #it's imperative that the child class has this object, otherwise it would SHARE the same object as the parent - not what we want
+    vectorizer = None
+
     @classmethod
     def extract_all(cls, examples):
         assert cls.vectorizer, 'cannot extract features without vectorizer'
@@ -115,6 +128,9 @@ class BigramFeatureTitle(BigramFeature):
 
 
 class BigramFeatureCode(BigramFeature):
+
+    vocabulary = None #it's imperative that the child class has this object, otherwise it would SHARE the same object as the parent - not what we want
+    vectorizer = None
 
     @classmethod
     def extract_all(cls, examples):

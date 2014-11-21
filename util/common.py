@@ -50,16 +50,15 @@ def extract_code_sections(mixed):
   """
   splits a mixed text into a list of noncode sections and a list of code sections
   """
-  noncode = filter(lambda x: x in string.printable, mixed)
 
   soup = BeautifulSoup(mixed)
   code = []
   for e in soup.find_all('pre'):
-    if e.text:
-      code += [e.text]
-    e_str = filter(lambda x: x in string.printable, str(e))
-    noncode = noncode.replace(e_str, '')
-
-  noncode = BeautifulSoup(noncode).text
+    e.extract()
+    code += [e.text]
+  for e in soup.find_all('code'):
+    e.extract()
+    code += [e.text]
+  noncode = soup.text
 
   return "\n".join(code), noncode

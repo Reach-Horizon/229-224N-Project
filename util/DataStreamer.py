@@ -29,7 +29,7 @@ class Example(object):
     data = {}
     for idx, f in enumerate(fields):
       data[f.lower()] = csv_entries[idx]
-    data['tags'] = data['tags'].split()
+    data['tags'] = [t.lower() for t in data['tags'].split()]
 
     return Example(data)
 

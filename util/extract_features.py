@@ -1,5 +1,5 @@
 import sys, logging, json
-from scipy.sparse import hstack
+from scipy.sparse import hstack, csr_matrix
 import os
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -101,4 +101,4 @@ if BigramFeatureCode.vocabulary != None and not args.ngrams_code_vocab:
         json.dump(BigramFeatureCode.vocabulary, f)
 
 
-save_sparse_csr(args.out_file + '.X', X.tocsr())
+save_sparse_csr(args.out_file + '.X', csr_matrix(X))
