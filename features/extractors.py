@@ -40,6 +40,8 @@ class TopLabelCountsFeature(object):
         return X
 
 
+
+
 class BigramFeature(object):
 
     vocabulary = None
@@ -87,3 +89,26 @@ class BigramFeature(object):
         cls.vectorizer.fit(documents)
         return cls.vectorizer.vocabulary_
 
+
+class BigramFeatureTitle(BigramFeature):
+
+    @classmethod
+    def extract_all(cls, examples):
+        assert cls.vectorizer, 'cannot extract features without vectorizer'
+
+        documents = [example.data['title'] for example in examples]
+
+        logging.info('vectorizing document titles')
+        if cls.vocabulary:
+            X = cls.vectorizer.transform(documents)
+        else:
+            X = cls.vectorizer.fit_transform(documents)
+            cls.vocabulary = cls.vectorizer.vocabulary_
+        return X
+
+    @classmethod
+    def extract_vocabulary(cls, examples):
+        assert cls.vectorizer, 'cannot extract features without vectorizer'
+        documents = [example.data['title'] for example in examples]
+        cls.vectorizer.fit(documents)
+        return cls.vectorizer.vocabulary_
