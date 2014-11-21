@@ -46,7 +46,6 @@ else:
 print 'training average f1', np.mean([score[0] for score in train_scores])
 print 'training average precision', np.mean([score[1] for score in train_scores])
 print 'training average recall', np.mean([score[2] for score in train_scores])
-print train_scores
 
 if args.testFeatures and args.testLabels:
     Xtest = load_sparse_csr(args.testFeatures)
