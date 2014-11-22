@@ -2,8 +2,8 @@
 
 split_data=1
 extract_features=1
-transform_features=1
-classify_on_transformed_features=1
+transform_features=0
+classify_on_transformed_features=0
 
 features='topLabels ngramsTitle ngrams' # choose between ngrams, ngramsTitle, ngramsCode, topLabels
 transformers='chi2 tfidf' # choose between tfidf, lsa (you should probably run tfidf *first* and lsa *last*)
@@ -23,7 +23,7 @@ vectorizer_type=hashing
 # Transformation
 lsa_size=100
 lsa_iterations=10
-chi2_size=20
+chi2_size=100
 
 prefix=top${top_labels}min${min_count}
 
@@ -99,7 +99,6 @@ then
   python util/transform_features.py \
   --lsa_dim $lsa_size \
   --lsa_iter $lsa_iterations \
-  --chi2_dim $chi2_size \
   experiments/${prefix}.train.X \
   experiments/${prefix}.train.Y \
   experiments/${prefix}.val.X \
@@ -116,7 +115,8 @@ then
   experiments/${prefix}.train.Y \
   --testFeatures experiments/${prefix}.val.X.red \
   --testLabels experiments/${prefix}.val.Y \
-  --classifier $classifier
+  --classifier $classifier \
+  --chi2_dim $chi2_size
 else
   echo "train and testing 1 vs rest using validation set"
   python classifiers/onevsrest_test.py \
@@ -124,7 +124,8 @@ else
   experiments/${prefix}.train.Y \
   --testFeatures experiments/${prefix}.val.X \
   --testLabels experiments/${prefix}.val.Y \
-  --classifier $classifier
+  --classifier $classifier \
+  --chi2_dim $chi2_size
 fi
 
 

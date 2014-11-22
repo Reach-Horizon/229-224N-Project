@@ -4,15 +4,23 @@
    with skewed label distributions."""
 from sklearn.metrics import f1_score, precision_score, recall_score
 from scipy.sparse import issparse
+from sklearn.feature_selection import SelectKBest
 import numpy as np
 import logging
 
 class OneVsRest():
 
+    def set_reducer(self, reducer_type, **kwargs):
+        self.reducer_type = reducer_type
+        self.reducer_parameters = kwargs
+
     def __init__(self, Clf, **kwargs):
         self.classifiers = []
         self.Clf = Clf
         self.kwargs = kwargs
+        self.reducers = []
+        self.reducer_type = None
+        self.reducer_parameters = {}
 
     def train(self, X, Y, fair_sampling=True):
         print 'Starting training...'
@@ -49,6 +57,12 @@ class OneVsRest():
             # train the classifier for this class
             my_X = X[train_indices, :]
             my_Y = my_Y[train_indices]
+
+            if self.reducer_type != None:
+                reducer = SelectKBest(self.reducer_type, **self.reducer_parameters)
+                my_X = reducer.fit_transform(my_X, my_Y)
+                self.reducers += [reducer]
+
             c.fit(my_X, my_Y)
             self.classifiers.append(c)
 
@@ -71,7 +85,11 @@ class OneVsRest():
         for k in range(num_labels):
             c = self.classifiers[k]
 
-            my_Y_pred = c.predict(new_X)
+            if self.reducer_type != None:
+                reducer = self.reducers[k]
+                my_new_X = reducer.transform(new_X)
+
+            my_Y_pred = c.predict(my_new_X)
 
             my_Y = np.squeeze(np.asarray(new_Y[:,k]))
 

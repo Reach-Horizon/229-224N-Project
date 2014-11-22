@@ -5,6 +5,8 @@ from sklearn.naive_bayes import BernoulliNB
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC, LinearSVC
+from sklearn.feature_selection import chi2
+
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
@@ -28,6 +30,8 @@ parser.add_argument('trainLabels', type = str, help = 'labels file for training 
 parser.add_argument('--testFeatures', type = str, help = 'data file for testing classifier')
 parser.add_argument('--testLabels', type = str, help = 'labels file for testing classifier')
 parser.add_argument('--classifier', type = str, default='logisticRegression', help = 'the classifier to use. Default=logisticRegression. Supported = ' + str(supported.keys()))
+parser.add_argument('--chi2_dim', type = int, default=0, help = 'the chi2 dimensions to keep. 0 means off. Default=0')
+
 parser.add_argument('classifierOptions', metavar='Options', type=str, nargs='?', help='eg. C=0.1', default=[])
 args = parser.parse_args()
 
@@ -37,6 +41,9 @@ for option in args.classifierOptions:
     options[terms[0]] = float(options[terms[1]])
 
 classif = supported[args.classifier]
+if args.chi2_dim != 0:
+    classif.set_reducer(chi2, k=args.chi2_dim)
+
 for idx, classifier in enumerate(classif.classifiers):
     classif.classifiers[idx].set_params(options)
 
