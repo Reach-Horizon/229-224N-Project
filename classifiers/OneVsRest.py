@@ -25,7 +25,7 @@ class OneVsRest():
         self.use_tfidf = False
         self.tfidfs = []
 
-    def train(self, X, Y, fair_sampling=True):
+    def train(self, X, Y, fair_sampling=True, restrict_sample_size=0):
         print 'Starting training...'
 
         if issparse(Y): # convert Y to a dense matrix because numpy/scipy is too dumb to deal with sparse Y
@@ -36,7 +36,7 @@ class OneVsRest():
         results = []
         for k in range(num_labels):
             # for each class
-            logging.info('training classifier for class %s' % k)
+            logging.info('training classifier for class %s using %s. Reducer=%s(%s). TFIDF=%s' % (k, self.Clf, self.reducer_type, self.reducer_parameters, self.use_tfidf))
             
             Clf = self.Clf
             c = Clf(**self.kwargs)
@@ -53,6 +53,12 @@ class OneVsRest():
                 np.random.shuffle(neg_indices)
                 neg_indices = neg_indices[:len(pos_indices)]
 
+            if restrict_sample_size:
+                if len(pos_indices) > restrict_sample_size:
+                    pos_indices = pos_indices[:restrict_sample_size]
+                if len(neg_indices) > restrict_sample_size:
+                    neg_indices = neg_indices[:restrict_sample_size]
+
             # merge the training indices
             train_indices = np.hstack((pos_indices, neg_indices))
             np.random.shuffle(train_indices)
@@ -63,17 +69,17 @@ class OneVsRest():
 
             if self.reducer_type != None:
                 reducer = SelectKBest(self.reducer_type, **self.reducer_parameters)
-                logging.info('applying ' + str(reducer))
+                #logging.info('applying ' + str(reducer))
                 my_X = reducer.fit_transform(my_X, my_Y)
                 self.reducers += [reducer]
 
             if self.use_tfidf:
                 transformer = TfidfTransformer(norm='l1')
-                logging.info('applying ' + str(transformer))
+                #logging.info('applying ' + str(transformer))
                 my_X = transformer.fit_transform(my_X, my_Y)
                 self.tfidfs += [transformer]
 
-            logging.info('fitting ' + str(c))
+            #logging.info('fitting ' + str(c))
             c.fit(my_X, my_Y)
             self.classifiers.append(c)
 
@@ -100,15 +106,15 @@ class OneVsRest():
 
             if self.reducer_type != None:
                 reducer = self.reducers[k]
-                logging.info('applying ' + str(reducer))
+                #logging.info('applying ' + str(reducer))
                 my_new_X = reducer.transform(new_X)
 
             if self.use_tfidf:
                 transformer = self.tfidfs[k]
-                logging.info('applying ' + str(transformer))
+                #logging.info('applying ' + str(transformer))
                 my_new_X = transformer.transform(my_new_X)
 
-            logging.info('predicting using ' + str(c))
+            #logging.info('predicting using ' + str(c))
             my_Y_pred = c.predict(my_new_X)
 
             my_Y = np.squeeze(np.asarray(new_Y[:,k]))

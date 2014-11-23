@@ -19,8 +19,8 @@ supported = {
     'logisticRegression': OneVsRest(LogisticRegression, fit_intercept=True, penalty='l1', C=0.1),
     'bernoulliNB': OneVsRest(BernoulliNB),
     'multinomialNB': OneVsRest(MultinomialNB),
-    'linearSVM': OneVsRest(LinearSVC, penalty='l2', loss='l1', C=0.2),
-    'rbfSVM': OneVsRest(SVC, C=0.9, kernel='rbf', gamma=0.0, shrinking=True, probability=False),
+    'linearSVM': OneVsRest(LinearSVC, penalty='l2', loss='l1', C=0.5),
+    'rbfSVM': OneVsRest(SVC, C=0.5, kernel='rbf', gamma=0.5, shrinking=True, probability=False),
     'polySVM': OneVsRest(SVC, C=0.5, kernel='poly', degree=3, shrinking=True, probability=False),
 }
 
@@ -55,10 +55,14 @@ logging.info('training 1 vs rest with %s' % classif.Clf)
 Xtrain = load_sparse_csr(args.trainFeatures)
 Ytrain = load_sparse_csr(args.trainLabels)
 
+restrict_sample_size = 0
+fair_sampling = True
+if 'rbf' in args.classifier:
+    restrict_sample_size = 1000
 if 'SVM' in args.classifier:
-    train_scores = classif.train(Xtrain, Ytrain, fair_sampling=False)
-else:
-    train_scores = classif.train(Xtrain, Ytrain, fair_sampling=True)
+    fair_sampling = False
+
+train_scores = classif.train(Xtrain, Ytrain, fair_sampling=False, restrict_sample_size=restrict_sample_size)
 
 print 'training average f1', np.mean([score[0] for score in train_scores])
 print 'training average precision', np.mean([score[1] for score in train_scores])

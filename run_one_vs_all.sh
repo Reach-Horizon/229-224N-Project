@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-split_data=1
-extract_features=1
+split_data=0
+extract_features=0
 
 features='topLabels ngramsTitle ngrams' # choose between ngrams, ngramsTitle, ngramsCode, topLabels
-classifier=linearSVM # choose between logisticRegression, bernoulliNB, multinomialNB, linearSVM (rbfSVM doesn't work...)
+classifier=rbfSVM # choose between logisticRegression, bernoulliNB, multinomialNB, linearSVM (rbfSVM doesn't work...)
 
 # Data collection
 top_labels=100 #how many labels to predict?
@@ -18,7 +18,7 @@ cutoff=10 #frequency cutoff for rare ngrams
 vectorizer_type=hashing
 
 # Transformation
-chi2_size=1000
+chi2_size=0
 use_tfidf=1
 
 prefix=top${top_labels}min${min_count}
@@ -29,7 +29,6 @@ then
 else
   tfidf=''
 fi
-
 
 
 mkdir experiments
