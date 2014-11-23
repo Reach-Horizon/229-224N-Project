@@ -52,6 +52,14 @@ class DataStreamer(object):
     infile.close()
 
   @classmethod
+  def get_examples_at_indices(cls, indices, fname):
+    example_id = 0
+    for example in cls.load_from_bz2(fname):
+        if example_id in indices:
+            yield example
+        example_id += 1
+
+  @classmethod
   def load_from_file(cls, fname):
     """
     returns a generator over the Examples present in the file

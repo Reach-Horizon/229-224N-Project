@@ -62,3 +62,33 @@ def extract_code_sections(mixed):
   noncode = soup.text
 
   return "\n".join(code), noncode
+
+
+def get_dataset_for_class(k, X, Y, fair_sampling=True, restrict_sample_size=0):
+    # get the Ys corresponding to this class
+    my_Y = np.squeeze(np.asarray(Y[:,k]))
+
+    # get the negative and positive examples for this class
+    pos_indices = np.where(my_Y == 1)[0]
+    neg_indices = np.where(my_Y == 0)[0]
+
+    # have too many negative examples, so subsample until we have equal number of negative and positive
+    if fair_sampling:
+        np.random.shuffle(neg_indices)
+        neg_indices = neg_indices[:len(pos_indices)]
+
+    if restrict_sample_size:
+        if len(pos_indices) > restrict_sample_size:
+            pos_indices = pos_indices[:restrict_sample_size]
+        if len(neg_indices) > restrict_sample_size:
+            neg_indices = neg_indices[:restrict_sample_size]
+
+    # merge the training indices
+    train_indices = np.hstack((pos_indices, neg_indices))
+    np.random.shuffle(train_indices)
+
+    # train the classifier for this class
+    my_X = X[train_indices, :]
+    my_Y = my_Y[train_indices]
+
+    return my_X, my_Y
