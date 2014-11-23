@@ -5,6 +5,7 @@
 from sklearn.metrics import f1_score, precision_score, recall_score
 from scipy.sparse import issparse
 from sklearn.feature_selection import SelectKBest
+from sklearn.feature_extraction.text import TfidfTransformer
 import numpy as np
 import logging
 
@@ -21,6 +22,8 @@ class OneVsRest():
         self.reducers = []
         self.reducer_type = None
         self.reducer_parameters = {}
+        self.use_tfidf = False
+        self.tfidfs = []
 
     def train(self, X, Y, fair_sampling=True):
         print 'Starting training...'
@@ -60,9 +63,17 @@ class OneVsRest():
 
             if self.reducer_type != None:
                 reducer = SelectKBest(self.reducer_type, **self.reducer_parameters)
+                logging.info('applying ' + str(reducer))
                 my_X = reducer.fit_transform(my_X, my_Y)
                 self.reducers += [reducer]
 
+            if self.use_tfidf:
+                transformer = TfidfTransformer(norm='l1')
+                logging.info('applying ' + str(transformer))
+                my_X = transformer.fit_transform(my_X, my_Y)
+                self.tfidfs += [transformer]
+
+            logging.info('fitting ' + str(c))
             c.fit(my_X, my_Y)
             self.classifiers.append(c)
 
@@ -85,10 +96,19 @@ class OneVsRest():
         for k in range(num_labels):
             c = self.classifiers[k]
 
+            my_new_X = new_X
+
             if self.reducer_type != None:
                 reducer = self.reducers[k]
+                logging.info('applying ' + str(reducer))
                 my_new_X = reducer.transform(new_X)
 
+            if self.use_tfidf:
+                transformer = self.tfidfs[k]
+                logging.info('applying ' + str(transformer))
+                my_new_X = transformer.transform(my_new_X)
+
+            logging.info('predicting using ' + str(c))
             my_Y_pred = c.predict(my_new_X)
 
             my_Y = np.squeeze(np.asarray(new_Y[:,k]))

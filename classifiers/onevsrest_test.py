@@ -31,7 +31,7 @@ parser.add_argument('--testFeatures', type = str, help = 'data file for testing 
 parser.add_argument('--testLabels', type = str, help = 'labels file for testing classifier')
 parser.add_argument('--classifier', type = str, default='logisticRegression', help = 'the classifier to use. Default=logisticRegression. Supported = ' + str(supported.keys()))
 parser.add_argument('--chi2_dim', type = int, default=0, help = 'the chi2 dimensions to keep. 0 means off. Default=0')
-
+parser.add_argument('--tfidf', action='store_true', help = 'Apply tfidf after feature reduction')
 parser.add_argument('classifierOptions', metavar='Options', type=str, nargs='?', help='eg. C=0.1', default=[])
 args = parser.parse_args()
 
@@ -43,6 +43,9 @@ for option in args.classifierOptions:
 classif = supported[args.classifier]
 if args.chi2_dim != 0:
     classif.set_reducer(chi2, k=args.chi2_dim)
+
+if args.tfidf:
+    classif.use_tfidf = True
 
 for idx, classifier in enumerate(classif.classifiers):
     classif.classifiers[idx].set_params(options)

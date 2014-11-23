@@ -1,31 +1,36 @@
 #!/usr/bin/env bash
 
-split_data=1
-extract_features=1
-transform_features=0
-classify_on_transformed_features=0
+split_data=0
+extract_features=0
 
 features='topLabels ngramsTitle ngrams' # choose between ngrams, ngramsTitle, ngramsCode, topLabels
-transformers='chi2 tfidf' # choose between tfidf, lsa (you should probably run tfidf *first* and lsa *last*)
-classifier=logisticRegression # choose between logisticRegression, bernoulliNB, multinomialNB, linearSVM (rbfSVM doesn't work...)
+classifier=linearSVM # choose between logisticRegression, bernoulliNB, multinomialNB, linearSVM (rbfSVM doesn't work...)
 
 # Data collection
-top_labels=100 #how many labels to predict?
-min_count=1000 #how many examples per label at least?
+top_labels=20 #how many labels to predict?
+min_count=2000 #how many examples per label at least?
 
 test_fraction=0.15 #how much to use for test
 val_fraction=0.15 #how much to use for tuning
 
 # Feature extraction
-cutoff=5 #frequency cutoff for rare ngrams
+cutoff=10 #frequency cutoff for rare ngrams
 vectorizer_type=hashing
 
 # Transformation
-lsa_size=100
-lsa_iterations=10
-chi2_size=100
+chi2_size=1000
+use_tfidf=1
 
 prefix=top${top_labels}min${min_count}
+
+if [ $use_tfidf -eq 1 ]
+then
+  tfidf='--tfidf'
+else
+  tfidf=''
+fi
+
+
 
 mkdir experiments
 
@@ -93,39 +98,14 @@ then
 fi
 
 
-if [ $transform_features -eq 1 ]
-then
-  echo "transforming features"
-  python util/transform_features.py \
-  --lsa_dim $lsa_size \
-  --lsa_iter $lsa_iterations \
-  experiments/${prefix}.train.X \
-  experiments/${prefix}.train.Y \
-  experiments/${prefix}.val.X \
-  $transformers
-fi
-
-
-if [ $classify_on_transformed_features -eq 1 ]
-then
-  # the above dumps out .red files, so we have to adjust the names accordingly
-  echo "train and testing 1 vs rest using validation set"
-  python classifiers/onevsrest_test.py \
-  experiments/${prefix}.train.X.red \
-  experiments/${prefix}.train.Y \
-  --testFeatures experiments/${prefix}.val.X.red \
-  --testLabels experiments/${prefix}.val.Y \
-  --classifier $classifier \
-  --chi2_dim $chi2_size
-else
-  echo "train and testing 1 vs rest using validation set"
-  python classifiers/onevsrest_test.py \
-  experiments/${prefix}.train.X \
-  experiments/${prefix}.train.Y \
-  --testFeatures experiments/${prefix}.val.X \
-  --testLabels experiments/${prefix}.val.Y \
-  --classifier $classifier \
-  --chi2_dim $chi2_size
-fi
+echo "train and testing 1 vs rest using validation set"
+python classifiers/onevsrest_test.py \
+experiments/${prefix}.train.X \
+experiments/${prefix}.train.Y \
+--testFeatures experiments/${prefix}.val.X \
+--testLabels experiments/${prefix}.val.Y \
+--classifier $classifier \
+--chi2_dim $chi2_size \
+$tfidf
 
 
