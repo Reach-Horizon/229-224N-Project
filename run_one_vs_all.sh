@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-split_data=0
-extract_features=0
+split_data=1
+extract_features=1
 
 features='topLabels ngramsTitle ngrams' # choose between ngrams, ngramsTitle, ngramsCode, topLabels
 classifier=rbfSVM # choose between logisticRegression, bernoulliNB, multinomialNB, linearSVM (rbfSVM doesn't work...)
