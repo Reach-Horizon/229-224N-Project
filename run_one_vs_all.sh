@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-split_data=0
-extract_features=0
+split_data=1
+extract_features=1
 
 features='topLabels ngramsTitle ngrams' # choose between ngrams, ngramsTitle, ngramsCode, topLabels
 classifier=linearSVM # choose between logisticRegression, bernoulliNB, multinomialNB, linearSVM (rbfSVM doesn't work...)
 
 # Data collection
-top_labels=20 #how many labels to predict?
-min_count=2000 #how many examples per label at least?
+top_labels=100 #how many labels to predict?
+min_count=1000 #how many examples per label at least?
 
 test_fraction=0.15 #how much to use for test
 val_fraction=0.15 #how much to use for tuning
