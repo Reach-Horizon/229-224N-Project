@@ -6,7 +6,7 @@ extract_features=1
 features='topLabels ngramsTitle ngrams' # choose between ngrams, ngramsTitle, ngramsCode, topLabels
 
 # Data collection
-top_labels=1000 #how many labels to predict?
+top_labels=100 #how many labels to predict?
 min_count=1000 #how many examples per label at least?
 
 test_fraction=0.15 #how much to use for test
