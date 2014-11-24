@@ -1,4 +1,5 @@
-from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.pipeline import Pipeline
+from sklearn.decomposition import PCA
 from sklearn.grid_search import GridSearchCV
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.feature_extraction.text import TfidfTransformer
@@ -11,8 +12,7 @@ from time import time
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
-from util.common import load_sparse_csr
-from util.common import get_dataset_for_class
+from util.common import load_sparse_csr, get_dataset_for_class, DenseMatrixTransformer
 
 parser = argparse.ArgumentParser(description = 'does hyperparameter tuning')
 parser.add_argument('trainFeatures', type = str, help = 'features matrix for training examples')
@@ -31,17 +31,19 @@ for k in range(Ytrain.shape[1]):
     X, Y = get_dataset_for_class(k, Xtrain, Ytrain, fair_sampling=True, restrict_sample_size=1000)
 
     pipeline = Pipeline([
-        ('kbest', SelectKBest(chi2)),
+        ('kbest', SelectKBest(chi2, k=1000)),
         ('tfidf', TfidfTransformer()),
+        ('densifier', DenseMatrixTransformer()),
+        ('pca', PCA()),
         ('clf', SVC()), #RBF kernel
     ])
 
     parameters = {
-        'kbest__k': (100, 300, 1000),
         'tfidf__use_idf': (True, False),
         'tfidf__norm': ('l1', 'l2'),
-        'clf__C': 10. ** np.arange(0, 4),
-        'clf__gamma': 10. ** np.arange(-3, 2),
+        'pca__n_components': (100, 300, 600),
+        'clf__C': 10. ** np.arange(1, 4),
+        'clf__gamma': 10. ** np.arange(-2, 1),
     }
 
     grid_search = GridSearchCV(pipeline, parameters, n_jobs=args.parallel, verbose=1)

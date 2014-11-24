@@ -1,4 +1,5 @@
 from sklearn.pipeline import Pipeline
+from sklearn.decomposition import PCA
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
@@ -10,8 +11,7 @@ import numpy as np
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
-from util.common import load_sparse_csr
-from util.common import get_dataset_for_class
+from util.common import load_sparse_csr, get_dataset_for_class, DenseMatrixTransformer
 
 parser = argparse.ArgumentParser(description = 'does hyperparameter tuning')
 parser.add_argument('trainFeatures', type = str, help = 'features matrix for training examples')
@@ -38,8 +38,10 @@ for k in range(Ytrain.shape[1]):
     X, Y = get_dataset_for_class(k, Xtrain, Ytrain, fair_sampling=True, restrict_sample_size=1000)
 
     pipeline = Pipeline([
-        ('kbest', SelectKBest(chi2, k=300)),
+        ('kbest', SelectKBest(chi2, k=400)),
         ('tfidf', TfidfTransformer(use_idf=False, norm='l2')),
+        ('densifier', DenseMatrixTransformer()),
+        ('pca', PCA(n_components=200)),
         ('clf', SVC(gamma=0.1, C=100)), #RBF kernel
     ])
 
