@@ -38,11 +38,11 @@ for k in range(Ytrain.shape[1]):
     X, Y = get_dataset_for_class(k, Xtrain, Ytrain, fair_sampling=True, restrict_sample_size=1000)
 
     pipeline = Pipeline([
-        ('kbest', SelectKBest(chi2, k=400)),
-        ('tfidf', TfidfTransformer(use_idf=False, norm='l2')),
+        ('kbest', SelectKBest(chi2, k=1000)),
+        ('tfidf', TfidfTransformer(use_idf=False, norm='l1')),
         ('densifier', DenseMatrixTransformer()),
-        ('pca', PCA(n_components=200)),
-        ('clf', SVC(gamma=0.1, C=100)), #RBF kernel
+        ('pca', PCA(n_components=500)),
+        ('clf', SVC(gamma=0.1, C=1000)), #RBF kernel
     ])
 
     print("pipeline:", [name for name, _ in pipeline.steps])

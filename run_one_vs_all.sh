@@ -2,6 +2,7 @@
 
 split_data=1
 extract_features=1
+tune_hyper=0
 
 features='topLabels ngramsTitle ngrams' # choose between ngrams, ngramsTitle, ngramsCode, topLabels
 
@@ -83,16 +84,19 @@ then
   $features
 fi
 
-echo "training/testing for each class"
-python util/train_test.py \
-experiments/${prefix}.train.X \
-experiments/${prefix}.train.Y \
-experiments/${prefix}.val.X \
-experiments/${prefix}.val.Y
-
-#echo "doing hyperparameter tuning for each class"
-#python util/tune_hyper.py \
-#experiments/${prefix}.train.X \
-#experiments/${prefix}.train.Y \
-#experiments/tuning/${prefix}.tuned \
-#--parallel 10
+if [ $tune_hyper -eq 1 ]
+then
+    echo "doing hyperparameter tuning for each class"
+    python util/tune_hyper.py \
+	experiments/${prefix}.train.X \
+	experiments/${prefix}.train.Y \
+	experiments/tuning/${prefix}.tuned \
+	--parallel 10
+else
+    echo "training/testing for each class"
+    python util/train_test.py \
+	experiments/${prefix}.train.X \
+	experiments/${prefix}.train.Y \
+	experiments/${prefix}.val.X \
+	experiments/${prefix}.val.Y
+fi
