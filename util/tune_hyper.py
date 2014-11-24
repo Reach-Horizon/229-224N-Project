@@ -43,7 +43,7 @@ for k in range(Ytrain.shape[1]):
         'clf__gamma': 10. ** np.arange(-5, 4),
     }
 
-    grid_search = GridSearchCV(pipeline, parameters, n_jobs=-1, verbose=1)
+    grid_search = GridSearchCV(pipeline, parameters, n_jobs=args.parallel, verbose=1)
 
     print("Performing grid search for class %s ..." % k)
     print("pipeline:", [name for name, _ in pipeline.steps])
