@@ -3,8 +3,9 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.svm import SVC
-import argparse, os, sys, json
+import argparse, os, sys
 import numpy as np
+import cPickle as pickle
 from pprint import pprint
 from time import time
 
@@ -36,11 +37,11 @@ for k in range(Ytrain.shape[1]):
     ])
 
     parameters = {
-        'kbest__k': (100, 300, 1000, 3000),
+        'kbest__k': (100, 300, 1000),
         'tfidf__use_idf': (True, False),
         'tfidf__norm': ('l1', 'l2'),
-        'clf__C': 10. ** np.arange(-2, 9),
-        'clf__gamma': 10. ** np.arange(-5, 4),
+        'clf__C': 10. ** np.arange(0, 4),
+        'clf__gamma': 10. ** np.arange(-3, 2),
     }
 
     grid_search = GridSearchCV(pipeline, parameters, n_jobs=args.parallel, verbose=1)
@@ -60,5 +61,5 @@ for k in range(Ytrain.shape[1]):
     for param_name in sorted(parameters.keys()):
         print("\t%s: %r" % (param_name, best_parameters[param_name]))
 
-    with open(args.out_file + '.class' + str(k) + '.json', 'wb') as f:
-        json.dump(best_parameters, f)
+    with open(args.out_file + '.class' + str(k) + '.pkl', 'wb') as f:
+        pickle.dump(best_parameters, f)
