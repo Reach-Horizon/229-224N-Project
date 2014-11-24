@@ -60,5 +60,5 @@ for k in range(Ytrain.shape[1]):
     for param_name in sorted(parameters.keys()):
         print("\t%s: %r" % (param_name, best_parameters[param_name]))
 
-    with open('class' + str(k) + '.' + args.out_file, 'wb') as f:
+    with open(args.out_file + '.class' + str(k) + '.json', 'wb') as f:
         json.dump(best_parameters, f)

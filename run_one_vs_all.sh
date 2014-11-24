@@ -88,5 +88,5 @@ echo "doing hyperparameter tuning for each class"
 python util/tune_hyper.py \
 experiments/${prefix}.train.X \
 experiments/${prefix}.train.Y \
-experiments/tuning/${prefix}.tuned.json \
+experiments/tuning/${prefix}.tuned \
 --parallel 10
