@@ -83,10 +83,16 @@ then
   $features
 fi
 
-
-echo "doing hyperparameter tuning for each class"
-python util/tune_hyper.py \
+echo "training/testing for each class"
+python util/train_test.py \
 experiments/${prefix}.train.X \
 experiments/${prefix}.train.Y \
-experiments/tuning/${prefix}.tuned \
---parallel 10
+experiments/${prefix}.val.X \
+experiments/${prefix}.val.Y
+
+#echo "doing hyperparameter tuning for each class"
+#python util/tune_hyper.py \
+#experiments/${prefix}.train.X \
+#experiments/${prefix}.train.Y \
+#experiments/tuning/${prefix}.tuned \
+#--parallel 10
