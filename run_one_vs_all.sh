@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 split_data=1
-tune_hyper=0
+tune_hyper=1
 
 # Data collection
 top_labels=10 #how many labels to predict?
-min_count=200 #how many examples per label at least?
+min_count=500 #how many examples per label at least?
 
 test_fraction=0.15 #how much to use for test
 val_fraction=0.15 #how much to use for tuning
@@ -29,15 +29,15 @@ if [ $tune_hyper -eq 1 ]
 then
     echo "doing hyperparameter tuning for each class"
     python util/tune_hyper.py \
-	experiments/${prefix}.train.X \
+	experiments/${prefix}.train.bz2 \
 	experiments/${prefix}.train.Y \
 	experiments/tuning/${prefix}.tuned \
 	--parallel 10
 else
     echo "training/testing for each class"
     python util/train_test.py \
-	experiments/${prefix}.train.X \
+	experiments/${prefix}.train.bz2 \
 	experiments/${prefix}.train.Y \
-	experiments/${prefix}.val.X \
+	experiments/${prefix}.val.bz2 \
 	experiments/${prefix}.val.Y
 fi

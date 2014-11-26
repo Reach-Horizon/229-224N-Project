@@ -19,13 +19,12 @@ from features.extractors import *
 from features.transformers import DenseMatrixTransformer
 
 parser = argparse.ArgumentParser(description = 'does hyperparameter tuning')
-parser.add_argument('trainFeatures', type = str, help = 'features matrix for training examples')
+parser.add_argument('trainExamplesZip', type = str, help = 'features matrix for training examples')
 parser.add_argument('trainLabels', type = str, help = 'labels file for training pipeline')
 parser.add_argument('out_file', help='where to store the best settings (json)')
 parser.add_argument('-p', '--parallel', type=int, help='the number of jobs to run in parallel. Default=1', default=1)
 args = parser.parse_args()
 
-Xtrain = load_sparse_csr(args.trainFeatures)
 Ytrain = load_sparse_csr(args.trainLabels).todense()
 
 for k in range(0, Ytrain.shape[1], 5):
@@ -33,8 +32,7 @@ for k in range(0, Ytrain.shape[1], 5):
 
     # get training examples
     train_examples_generator = DataStreamer.load_from_bz2(args.trainExamplesZip)
-    test_examples_generator = DataStreamer.load_from_bz2(args.testExamplesZip)
-    X, Y = get_dataset_for_class(k, Xtrain, Ytrain, fair_sampling=False, restrict_sample_size=0)
+    X, Y = get_dataset_for_class(k, train_examples_generator, Ytrain, fair_sampling=False, restrict_sample_size=0)
 
     pipeline = Pipeline([
         ('ngrams', FeatureUnion([
