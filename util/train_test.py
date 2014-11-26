@@ -1,8 +1,9 @@
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.decomposition import PCA
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 import argparse, os, sys
 from time import time
@@ -12,44 +13,47 @@ import numpy as np
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
 from util.common import load_sparse_csr, get_dataset_for_class, DenseMatrixTransformer
+from util.DataStreamer import DataStreamer
+from features.extractors import *
 
 parser = argparse.ArgumentParser(description = 'does hyperparameter tuning')
-parser.add_argument('trainFeatures', type = str, help = 'features matrix for training examples')
+parser.add_argument('trainExamplesZip', type = str, help = 'bz2 file for training examples')
 parser.add_argument('trainLabels', type = str, help = 'labels file for training pipeline')
-parser.add_argument('testFeatures', type = str, help = 'features matrix for training examples')
+parser.add_argument('testExamplesZip', type = str, help = 'bz2 file for test examples')
 parser.add_argument('testLabels', type = str, help = 'labels file for training pipeline')
 args = parser.parse_args()
 
 print 'loading datasets'
-Xtrain = load_sparse_csr(args.trainFeatures)
 Ytrain = load_sparse_csr(args.trainLabels).todense()
-Xtest = load_sparse_csr(args.testFeatures)
 Ytest = load_sparse_csr(args.testLabels).todense()
 
 train_scores = []
 test_scores = []
 
 for k in range(Ytrain.shape[1]):
-    # for each class k
+    train_examples_generator = DataStreamer.load_from_bz2(args.trainExamplesZip)
+    test_examples_generator = DataStreamer.load_from_bz2(args.testExamplesZip)
 
     print("Training class %s ..." % k)
 
     # get training examples
-    X, Y = get_dataset_for_class(k, Xtrain, Ytrain, fair_sampling=True, restrict_sample_size=1000)
+    examples, Y = get_dataset_for_class(k, train_examples_generator, Ytrain, fair_sampling=False, restrict_sample_size=1000)
 
     pipeline = Pipeline([
-        ('kbest', SelectKBest(chi2, k=1000)),
-        ('tfidf', TfidfTransformer(use_idf=False, norm='l1')),
-        ('densifier', DenseMatrixTransformer()),
-        ('pca', PCA(n_components=500)),
-        ('clf', SVC(gamma=0.1, C=1000)), #RBF kernel
+        ('ngrams', FeatureUnion([
+            ('title', TitleNgramsExtractor()),
+            ('body', BodyNgramsExtractor()),
+            ('code', CodeNgramsExtractor()),
+            ('label', LabelCountsExtractor()),
+            ('pygment', PygmentExtractor()),
+        ])),
+        ('clf', LogisticRegression()),
     ])
 
     print("pipeline:", [name for name, _ in pipeline.steps])
-    pipeline.fit(X, Y)
-    Ypred = pipeline.predict(X)
+    pipeline.fit(examples, Y)
+    Ypred = pipeline.predict(examples)
     scores = {
-        'accuracy': accuracy_score(Y, Ypred),
         'precision': precision_score(Y, Ypred),
         'recall': recall_score(Y, Ypred),
         'f1': f1_score(Y, Ypred)
@@ -62,10 +66,9 @@ for k in range(Ytrain.shape[1]):
 
     train_scores += [scores]
 
-    X, Y = get_dataset_for_class(k, Xtest, Ytest, fair_sampling=True)
-    Ypred = pipeline.predict(X)
+    examples, Y = get_dataset_for_class(k, test_examples_generator, Ytest, fair_sampling=False)
+    Ypred = pipeline.predict(examples)
     scores = {
-        'accuracy': accuracy_score(Y, Ypred),
         'precision': precision_score(Y, Ypred),
         'recall': recall_score(Y, Ypred),
         'f1': f1_score(Y, Ypred)

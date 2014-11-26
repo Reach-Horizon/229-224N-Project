@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, json
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
@@ -14,4 +14,6 @@ exampleB = Example({'title': 'why does sklearn Suck so Much???', 'body': 'I used
 
 examples = [exampleA, exampleB]
 
-mapping = [u'c#', u'java', u'php', u'javascript', u'android', u'jquery', u'c++', u'iphone', u'python', u'asp.net', 'c']
+with open(os.path.join(root_dir, 'features', 'all.labels.json')) as f:
+    mapping = json.load(f)
+

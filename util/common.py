@@ -2,6 +2,7 @@ import numpy as np
 import logging, bz2
 from scipy.sparse import csr_matrix
 from bs4 import BeautifulSoup
+from random import shuffle
 
 def save_dense(filename, array):
   np.savez(filename + '.dense', array)
@@ -64,13 +65,13 @@ def extract_code_sections(mixed):
   return "\n".join(code), noncode
 
 
-def get_dataset_for_class(k, X, Y, fair_sampling=True, restrict_sample_size=0):
+def get_dataset_for_class(k, examples, Y, fair_sampling=True, restrict_sample_size=0):
     # get the Ys corresponding to this class
-    my_Y = np.squeeze(np.asarray(Y[:,k]))
+    my_Y = Y[:,k].copy().reshape(-1)
 
     # get the negative and positive examples for this class
-    pos_indices = np.where(my_Y == 1)[0]
-    neg_indices = np.where(my_Y == 0)[0]
+    pos_indices = np.where(my_Y == 1)[1]
+    neg_indices = np.where(my_Y == 0)[1]
 
     # have too many negative examples, so subsample until we have equal number of negative and positive
     if fair_sampling:
@@ -84,18 +85,16 @@ def get_dataset_for_class(k, X, Y, fair_sampling=True, restrict_sample_size=0):
             neg_indices = neg_indices[:restrict_sample_size]
 
     # merge the training indices
-    train_indices = np.hstack((pos_indices, neg_indices))
-    np.random.shuffle(train_indices)
+    train_indices = np.hstack((pos_indices, neg_indices)).tolist()[0]
+    my_examples = [example for (idx, example) in enumerate(examples) if idx in train_indices]
+    my_Y = my_Y[0, train_indices].tolist()[0]
 
-    # train the classifier for this class
-    my_X = X[train_indices, :]
-    my_Y = my_Y[train_indices]
+    combined = zip(my_examples, my_Y)
+    shuffle(combined)
+    my_examples[:], my_Y[:] = zip(*combined)
 
-    return my_X, my_Y
+    return my_examples, np.array(my_Y)
 
-from sklearn.base import BaseEstimator, TransformerMixin # hack for PCA
-class DenseMatrixTransformer(BaseEstimator, TransformerMixin):
-    def fit(self, X, y=None):
-        return self
-    def transform(self, X, y=None):
-        return X.todense()
+
+def flatten_list(l):
+    return [item for sublist in l for item in sublist]

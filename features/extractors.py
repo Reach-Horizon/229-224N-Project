@@ -8,7 +8,6 @@ root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
 
 from sklearn.feature_extraction.text import CountVectorizer, HashingVectorizer
-from nltk import word_tokenize
 from util.common import extract_code_sections
 
 tag_re = '[' + punctuation.replace('#', '').replace('+', '').replace('_', '').replace('-', '') + '0-9]+'
@@ -18,165 +17,65 @@ def tokenizer(s):
     return tag_re.sub(' ', s).split()
 
 
-class TopLabelCountsFeature(object):
+class ExampleNgramsVectorizer(CountVectorizer):
+    def __init__(self, **init_params):
+        init_params['tokenizer'] = tokenizer
+        init_params['token_pattern'] = r"\b\w+\b"
+        super(ExampleNgramsVectorizer, self).__init__(**init_params)
 
-    labels = None
+    def docs_from_examples(self, examples):
+        assert False, 'cannot call docs_from_examples from abstract parent class'
 
-    @classmethod
-    def load_labels_from_file(cls, label_file):
-        with open(label_file) as f:
-            cls.labels = json.load(f)['mapping']
+    def transform(self, examples):
+        return super(ExampleNgramsVectorizer, self).transform(self.docs_from_examples(examples))
 
-    @classmethod
-    def extract_all(cls, examples):
-        assert cls.labels, 'cannot extract features without labels'
+    def fit(self, examples, y=None, **fit_params):
+        return super(ExampleNgramsVectorizer, self).fit(self.docs_from_examples(examples), y, **fit_params)
 
-        row_idx = 0
-        feature_matrix = []
-        for example in examples:
-            if row_idx % 10000 == 0:
-                logging.info('processed %s examples' % row_idx)
-            code, noncode = extract_code_sections(example.data['body'])
+    def fit_transform(self, examples, y=None, **fit_transform_params):
+        return super(ExampleNgramsVectorizer, self).fit_transform(self.docs_from_examples(examples), y, **fit_transform_params)
 
-            tokens = tokenizer(noncode + " " + example.data['title'])
-            seen_labels = [word.lower() for word in tokens if word.lower() in cls.labels]
-            counter = Counter(seen_labels)
-            feature_vector = [counter[label] for label in cls.labels]
-            feature_matrix += [feature_vector]
-            row_idx += 1
+class ExampleNgramsVectorizerNoFit(ExampleNgramsVectorizer):
 
-        logging.info('converting label counts to feature matrix')
-        X = np.array(feature_matrix)
-        return X
+    def fit(self, examples, y=None, **fit_params):
+        return self
 
+    def fit_transform(self, examples, y=None, **fit_transform_params):
+        return self.transform(examples)
 
+class CodeNgramsExtractor(ExampleNgramsVectorizer):
 
+    def docs_from_examples(self, examples):
+        return [extract_code_sections(example.data['body'])[0] for example in examples]
 
-class BigramFeature(object):
+class BodyNgramsExtractor(ExampleNgramsVectorizer):
 
-    vocabulary = None
-    vectorizer = None
+    def docs_from_examples(self, examples):
+        return [extract_code_sections(example.data['body'])[1] for example in examples]
 
-    @classmethod
-    def load_vocabulary_from_file(cls, vocab_file):
-        with open(vocab_file) as f:
-            cls.vocabulary = json.load(f)
+class TitleNgramsExtractor(ExampleNgramsVectorizer):
 
-    @classmethod
-    def set_vectorizer(cls, ngram_range=(1,1), binary=True, stop_words='english', lowercase=True, cutoff=2, vectorizer_type=CountVectorizer):
-        if vectorizer_type == CountVectorizer:
-            cls.vectorizer = CountVectorizer(ngram_range=ngram_range,
-                                             binary=binary,
-                                             stop_words='english',
-                                             lowercase=True,
-                                             min_df=cutoff,
-                                             vocabulary=cls.vocabulary,
-                                             tokenizer=tokenizer,
-                                             token_pattern=r"\b\w+\b")
-        else:
-            cls.vectorizer = HashingVectorizer(ngram_range=ngram_range,
-                                               binary=binary,
-                                               stop_words='english',
-                                               lowercase=True,
-                                               tokenizer=tokenizer,
-                                               token_pattern=r"\b\w+\b",
-                                               non_negative=True)
+    def docs_from_examples(self, examples):
+        return [example.data['title'] for example in examples]
 
-    @classmethod
-    def extract_all(cls, examples):
-        assert cls.vectorizer, 'cannot extract features without vectorizer'
+class LabelCountsExtractor(ExampleNgramsVectorizerNoFit):
+    # do NOT allow fit, because we force the dictionary
 
-        documents = []
-        row_idx = 0
-        for example in examples:
-            if row_idx % 10000 == 0:
-                logging.info('processed %s examples' % row_idx)
-            code, noncode = extract_code_sections(example.data['body'])
-            documents += [noncode]
-            row_idx += 1
+    def __init__(self, **init_params):
+        super(LabelCountsExtractor, self).__init__(**init_params)
+        with open(os.path.join(root_dir, 'features', 'all.labels.json')) as f:
+            self.vocabulary_ = json.load(f)
 
-        logging.info('vectorizing documents')
-        if cls.vocabulary or isinstance(cls.vectorizer, HashingVectorizer):
-            X = cls.vectorizer.transform(documents)
-        else:
-            X = cls.vectorizer.fit_transform(documents)
-            cls.vocabulary = cls.vectorizer.vocabulary_
-        return X
+    def docs_from_examples(self, examples):
+        return [example.data['body'] + "\n" + example.data['title'] for example in examples]
 
-    @classmethod
-    def extract_vocabulary(cls, examples):
-        assert cls.vectorizer, 'cannot extract features without vectorizer'
+class PygmentExtractor(ExampleNgramsVectorizerNoFit):
+    # do NOT allow fit, because we force the dictionary
 
-        documents = []
-        for example in examples:
-            code, noncode = extract_code_sections(example.data['body'])
-            documents += [noncode]
+    def __init__(self, **init_params):
+        super(PygmentExtractor, self).__init__(**init_params)
+        with open(os.path.join(root_dir, 'features', 'lexers.json')) as f:
+            self.vocabulary_ = json.load(f)
 
-        cls.vectorizer.fit(documents)
-        return cls.vectorizer.vocabulary_
-
-
-class BigramFeatureTitle(BigramFeature):
-
-    vocabulary = None #it's imperative that the child class has this object, otherwise it would SHARE the same object as the parent - not what we want
-    vectorizer = None
-
-    @classmethod
-    def extract_all(cls, examples):
-        assert cls.vectorizer, 'cannot extract features without vectorizer'
-
-        documents = [example.data['title'] for example in examples]
-
-        logging.info('vectorizing document titles')
-        if cls.vocabulary or isinstance(cls.vectorizer, HashingVectorizer):
-            X = cls.vectorizer.transform(documents)
-        else:
-            X = cls.vectorizer.fit_transform(documents)
-            cls.vocabulary = cls.vectorizer.vocabulary_
-        return X
-
-    @classmethod
-    def extract_vocabulary(cls, examples):
-        assert cls.vectorizer, 'cannot extract features without vectorizer'
-        documents = [example.data['title'] for example in examples]
-        cls.vectorizer.fit(documents)
-        return cls.vectorizer.vocabulary_
-
-
-class BigramFeatureCode(BigramFeature):
-
-    vocabulary = None #it's imperative that the child class has this object, otherwise it would SHARE the same object as the parent - not what we want
-    vectorizer = None
-
-    @classmethod
-    def extract_all(cls, examples):
-        assert cls.vectorizer, 'cannot extract features without vectorizer'
-
-        documents = []
-        row_idx = 0
-        for example in examples:
-            if row_idx % 10000 == 0:
-                logging.info('processed %s examples' % row_idx)
-            code, noncode = extract_code_sections(example.data['body'])
-            documents += [code]
-            row_idx += 1
-
-        logging.info('vectorizing documents')
-        if cls.vocabulary or isinstance(cls.vectorizer, HashingVectorizer):
-            X = cls.vectorizer.transform(documents)
-        else:
-            X = cls.vectorizer.fit_transform(documents)
-            cls.vocabulary = cls.vectorizer.vocabulary_
-        return X
-
-    @classmethod
-    def extract_vocabulary(cls, examples):
-        assert cls.vectorizer, 'cannot extract features without vectorizer'
-
-        documents = []
-        for example in examples:
-            code, noncode = extract_code_sections(example.data['body'])
-            documents += [code]
-
-        cls.vectorizer.fit(documents)
-        return cls.vectorizer.vocabulary_
+    def docs_from_examples(self, examples):
+        return [example.data['body'] + "\n" + example.data['title'] for example in examples]
