@@ -14,6 +14,7 @@ from time import time
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
 from util.common import load_sparse_csr, get_dataset_for_class
+from util.DataStreamer import DataStreamer
 from features.extractors import *
 from features.transformers import DenseMatrixTransformer
 
@@ -27,10 +28,12 @@ args = parser.parse_args()
 Xtrain = load_sparse_csr(args.trainFeatures)
 Ytrain = load_sparse_csr(args.trainLabels).todense()
 
-for k in range(Ytrain.shape[1]):
-    # for each class k
+for k in range(0, Ytrain.shape[1], 5):
+    # skip over some classes
 
     # get training examples
+    train_examples_generator = DataStreamer.load_from_bz2(args.trainExamplesZip)
+    test_examples_generator = DataStreamer.load_from_bz2(args.testExamplesZip)
     X, Y = get_dataset_for_class(k, Xtrain, Ytrain, fair_sampling=False, restrict_sample_size=0)
 
     pipeline = Pipeline([

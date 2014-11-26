@@ -12,7 +12,7 @@ import numpy as np
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
-from util.common import load_sparse_csr, get_dataset_for_class, DenseMatrixTransformer
+from util.common import load_sparse_csr, get_dataset_for_class
 from util.DataStreamer import DataStreamer
 from features.extractors import *
 
