@@ -35,6 +35,9 @@ print '<passed> TopLabelCountsFeature'
 
 
 extractor = TitleNgramsExtractor()
+
+extractor.set_params(binary=True)
+
 X = extractor.fit_transform(examples)
 assert 'c#' not in extractor.vocabulary_
 assert 'suck' in extractor.vocabulary_

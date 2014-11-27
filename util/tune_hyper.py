@@ -64,7 +64,7 @@ for k in range(0, Ytrain.shape[1], 5):
         ])),
         ('densifier', DenseMatrixTransformer()),
         ('pca', PCA()),
-        ('clf', LogisticRegression()),
+        ('clf', LogisticRegression(class_weight='auto')),
     ])
 
     parameters = {
@@ -101,7 +101,6 @@ for k in range(0, Ytrain.shape[1], 5):
         'ngrams__label__tfidf__norm': ('l1', 'l2'),
         'pca__n_components': (100, 300, 600),
         'clf__C': 10. ** np.arange(1, 4),
-        'clf__gamma': 10. ** np.arange(-2, 1),
     }
 
     searcher = RandomizedSearchCV(pipeline, parameters, n_jobs=args.parallel, verbose=1, n_iter=50)

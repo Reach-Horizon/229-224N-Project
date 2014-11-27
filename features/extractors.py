@@ -16,6 +16,16 @@ tag_re = re.compile(tag_re)
 def tokenizer(s):
     return tag_re.sub(' ', s).split()
 
+default = {
+    'input':u'content', 'encoding':u'utf-8', 'charset':None, 'decode_error':u'strict', 'charset_error':None, 'strip_accents':None, 'lowercase':True, 'preprocessor':None, 'tokenizer':None, 'stop_words':None, 'token_pattern':u'(?u)\b\w\w+\b', 'ngram_range':(1, 1), 'analyzer':u'word', 'max_df':1.0, 'min_df':1, 'max_features':None, 'vocabulary':None, 'binary':False, 'dtype':np.int64
+}
+
+def get_params(new):
+    params = default.copy()
+    for key in params:
+        if key in new:
+            params[key] = new[key]
+    return params
 
 class ExampleNgramsVectorizer(CountVectorizer):
     def __init__(self, **init_params):
@@ -45,24 +55,33 @@ class ExampleNgramsVectorizerNoFit(ExampleNgramsVectorizer):
 
 class CodeNgramsExtractor(ExampleNgramsVectorizer):
 
+    def __init__(self, input=u'content', encoding=u'utf-8', charset=None, decode_error=u'strict', charset_error=None, strip_accents=None, lowercase=True, preprocessor=None, tokenizer=None, stop_words=None, token_pattern=u'(?u)\b\w\w+\b', ngram_range=(1, 1), analyzer=u'word', max_df=1.0, min_df=1, max_features=None, vocabulary=None, binary=False, dtype=np.int64):
+        super(CodeNgramsExtractor, self).__init__( **get_params(locals()) )
+
     def docs_from_examples(self, examples):
         return [extract_code_sections(example.data['body'])[0] for example in examples]
 
 class BodyNgramsExtractor(ExampleNgramsVectorizer):
 
+    def __init__(self, input=u'content', encoding=u'utf-8', charset=None, decode_error=u'strict', charset_error=None, strip_accents=None, lowercase=True, preprocessor=None, tokenizer=None, stop_words=None, token_pattern=u'(?u)\b\w\w+\b', ngram_range=(1, 1), analyzer=u'word', max_df=1.0, min_df=1, max_features=None, vocabulary=None, binary=False, dtype=np.int64):
+        super(BodyNgramsExtractor, self).__init__( **get_params(locals()) )
+
     def docs_from_examples(self, examples):
         return [extract_code_sections(example.data['body'])[1] for example in examples]
 
 class TitleNgramsExtractor(ExampleNgramsVectorizer):
+    def __init__(self, input=u'content', encoding=u'utf-8', charset=None, decode_error=u'strict', charset_error=None, strip_accents=None, lowercase=True, preprocessor=None, tokenizer=None, stop_words=None, token_pattern=u'(?u)\b\w\w+\b', ngram_range=(1, 1), analyzer=u'word', max_df=1.0, min_df=1, max_features=None, vocabulary=None, binary=False, dtype=np.int64):
+        super(TitleNgramsExtractor, self).__init__( **get_params(locals()) )
 
     def docs_from_examples(self, examples):
         return [example.data['title'] for example in examples]
 
 class LabelCountsExtractor(ExampleNgramsVectorizerNoFit):
     # do NOT allow fit, because we force the dictionary
+    def __init__(self, input=u'content', encoding=u'utf-8', charset=None, decode_error=u'strict', charset_error=None, strip_accents=None, lowercase=True, preprocessor=None, tokenizer=None, stop_words=None, token_pattern=u'(?u)\b\w\w+\b', ngram_range=(1, 1), analyzer=u'word', max_df=1.0, min_df=1, max_features=None, vocabulary=None, binary=False, dtype=np.int64):
 
-    def __init__(self, **init_params):
-        super(LabelCountsExtractor, self).__init__(**init_params)
+        super(LabelCountsExtractor, self).__init__( **get_params(locals()) )
+
         with open(os.path.join(root_dir, 'features', 'all.labels.json')) as f:
             self.vocabulary_ = json.load(f)
 
@@ -72,8 +91,8 @@ class LabelCountsExtractor(ExampleNgramsVectorizerNoFit):
 class PygmentExtractor(ExampleNgramsVectorizerNoFit):
     # do NOT allow fit, because we force the dictionary
 
-    def __init__(self, **init_params):
-        super(PygmentExtractor, self).__init__(**init_params)
+    def __init__(self, input=u'content', encoding=u'utf-8', charset=None, decode_error=u'strict', charset_error=None, strip_accents=None, lowercase=True, preprocessor=None, tokenizer=None, stop_words=None, token_pattern=u'(?u)\b\w\w+\b', ngram_range=(1, 1), analyzer=u'word', max_df=1.0, min_df=1, max_features=None, vocabulary=None, binary=False, dtype=np.int64):
+        super(PygmentExtractor, self).__init__( **get_params(locals()) )
         with open(os.path.join(root_dir, 'features', 'lexers.json')) as f:
             self.vocabulary_ = json.load(f)
 
