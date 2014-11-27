@@ -37,15 +37,20 @@ for k in range(0, Ytrain.shape[1], 5):
     pipeline = Pipeline([
         ('ngrams', FeatureUnion([
             ('title', Pipeline([
-                ('counts', TitleNgramsExtractor(ngram_range=(1,1))),
-                ('kbest', SelectKBest(chi2)),
+                ('counts', TitleNgramsExtractor(
+                    ngram_range=(1,1),
+                    binary=True,
+                    max_df=1.0,
+                    max_features=100000,
+                )),
+                # ('kbest', SelectKBest(chi2)),
+                ('tfidf', TfidfTransformer(use_idf=True, norm='l2')),
+            ])),
+            ('body', Pipeline([
+                ('counts', BodyNgramsExtractor(ngram_range=(1,1))),
+                # ('kbest', SelectKBest(chi2)),
                 ('tfidf', TfidfTransformer()),
             ])),
-            # ('body', Pipeline([
-            #     ('counts', BodyNgramsExtractor(ngram_range=(1,1))),
-            #     ('kbest', SelectKBest(chi2)),
-            #     ('tfidf', TfidfTransformer()),
-            # ])),
             # ('code', Pipeline([
             #     ('counts', CodeNgramsExtractor(ngram_range=(1,1))),
             #     ('kbest', SelectKBest(chi2)),
@@ -68,33 +73,28 @@ for k in range(0, Ytrain.shape[1], 5):
     ])
 
     parameters = {
-        'ngrams__title__counts__min_df': (0., 0.25, 0.49),
-        'ngrams__title__counts__max_df': (0.5, 0.75, 1.0),
-        'ngrams__title__counts__max_features': (None, 1000, 10000, 100000),
-        'ngrams__title__counts__binary': (True, False),
+        # 'ngrams__title__counts__max_df': (0.5, 1.0),
+        # 'ngrams__title__counts__max_features': (None, 1000, 10000, 100000),
+        # 'ngrams__title__counts__binary': (True, False),
         'ngrams__title__kbest__k': (100, 500, 1000),
-        'ngrams__title__tfidf__use_idf': (True, False),
-        'ngrams__title__tfidf__norm': ('l1', 'l2'),
-        # 'ngrams__body__counts__min_df': (0., 0.25, 0.49),
-        # 'ngrams__body__counts__max_df': (0.5, 0.75, 1.0),
-        # 'ngrams__body__counts__max_features': (None, 1000, 10000, 100000),
-        # 'ngrams__body__counts__binary': (True, False),
-        # 'ngrams__body__kbest__k': (100, 500, 1000),
-        # 'ngrams__body__tfidf__use_idf': (True, False),
-        # 'ngrams__body__tfidf__norm': ('l1', 'l2'),
-        # 'ngrams__code__counts__min_df': (0., 0.25, 0.49),
+        # 'ngrams__title__tfidf__use_idf': (True, False),
+        # 'ngrams__title__tfidf__norm': ('l1', 'l2'),
+        'ngrams__body__counts__max_df': (0.5, 1.0),
+        'ngrams__body__counts__max_features': (None, 10000, 100000),
+        'ngrams__body__counts__binary': (True, False),
+        'ngrams__body__kbest__k': (100, 1000, 10000),
+        'ngrams__body__tfidf__use_idf': (True, False),
+        'ngrams__body__tfidf__norm': ('l1', 'l2'),
         # 'ngrams__code__counts__max_df': (0.5, 0.75, 1.0),
         # 'ngrams__code__counts__max_features': (None, 1000, 10000, 100000),
         # 'ngrams__code__counts__binary': (True, False),
         # 'ngrams__code__kbest__k': (100, 500, 1000),
         # 'ngrams__code__tfidf__use_idf': (True, False),
         # 'ngrams__code__tfidf__norm': ('l1', 'l2'),
-        # 'ngrams__pygment__counts__min_df': (0., 0.25, 0.49),
         # 'ngrams__pygment__counts__binary': (True, False),
         # 'ngrams__pygment__kbest__k': (100, 500, 1000),
         # 'ngrams__pygment__tfidf__use_idf': (True, False),
         # 'ngrams__pygment__tfidf__norm': ('l1', 'l2'),
-        # 'ngrams__label__counts__min_df': (0., 0.25, 0.49),
         # 'ngrams__label__counts__binary': (True, False),
         # 'ngrams__label__kbest__k': (100, 500, 1000),
         # 'ngrams__label__tfidf__use_idf': (True, False),
@@ -103,7 +103,7 @@ for k in range(0, Ytrain.shape[1], 5):
         # 'clf__C': 10. ** np.arange(1, 4),
     }
 
-    searcher = GridSearchCV(pipeline, parameters, n_jobs=args.parallel, verbose=1)
+    searcher = RandomizedSearchCV(pipeline, parameters, n_jobs=args.parallel, verbose=1, n_iter=200)
 
     print(searcher)
     print("Performing search for class %s ..." % k)
