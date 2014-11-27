@@ -2,6 +2,8 @@
 from gensim.models import Word2Vec
 from nltk import word_tokenize, sent_tokenize
 import sys, os
+import logging
+logging.basicConfig(level=logging.INFO)
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
@@ -29,8 +31,6 @@ def train_model(examples):
 if __name__ == '__main__':
     train_file = os.path.join(root_dir, 'full_data', 'Train.csv.bz2')
     examples_generator = DataStreamer.load_from_file(train_file)
-    import logging
-    logging.basicConfig(level=logging.INFO)
     model = train_model(examples_generator)
     out_file = os.path.join(root_dir, 'full_data', 'nlang_code')
     model.save(out_file)

@@ -7,7 +7,7 @@ root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
 
 from util.DataStreamer import DataStreamer
-from features.extractors import BigramFeature, TopLabelCountsFeature, BigramFeatureTitle, BigramFeatureCode
+from features.extractors import BigramFeature, TopLabelCountsFeature, BigramFeatureTitle, BigramFeatureCode, NERFeature
 from util.common import save_sparse_csr, load_sparse_csr
 
 import argparse
@@ -17,6 +17,7 @@ supported_features = {
     'ngramsTitle':BigramFeatureTitle,
     'ngramsCode':BigramFeatureCode,
     'topLabels':TopLabelCountsFeature,
+    'NER': NERFeature,
     # add more feature extractors here
     }
 
@@ -35,14 +36,19 @@ parser.add_argument('--ngrams_title_cutoff', type=int, help='words that occur le
 parser.add_argument('--ngrams_title_vocab', help='vocabulary file for use with bigram feature', default=None)
 parser.add_argument('--ngrams_code_unigrams', action='store_true', help='use only unigrams instead', default=False)
 parser.add_argument('--ngrams_code_binarize', action='store_true', help='use only binary indicators for features instead of real counts', default=False)
-parser.add_argument('--ngrams_code_cutoff', type=int, help='words that occur less than this number of times will be ignored. Default=2', default=2)
+parser.add_argument('--ngrams_code_cutoff', type=int, help='words that occur less than this nu  mber of times will be ignored. Default=2', default=2)
 parser.add_argument('--ngrams_code_vocab', help='vocabulary file for use with bigram feature', default=None)
 parser.add_argument('--top_labels_labels', help='labels file for use with top labels feature', default=None)
 parser.add_argument('--vectorizer_type', help='can be [count, hashing]. Default=count', default='count')
 parser.add_argument('features', metavar='Features', type=str, nargs='+',
                    help='Choose between ' + str(supported_features.keys()))
+parser.add_argument('--NER_code_unigrams', action='store_true', help='use only unigrams instead', default=False)
+parser.add_argument('--NER_code_binarize', action='store_true', help='use only binary indicators for features instead of real counts', default=False)
+parser.add_argument('--NER_code_cutoff', type=int, help='words that occur less than this number of times will be ignored. Default=2', default=2)
+parser.add_argument('--NER_code_vocab', help='vocabulary file for use with bigram feature', default=None)
 args = parser.parse_args()
 
+print 'NER CUTOFF ', args.NER_code_cutoff
 unsupported_features = set(args.features) - set(supported_features.keys())
 assert len(unsupported_features) == 0, 'do not support features ' + str(unsupported_features)
 
@@ -84,6 +90,15 @@ if 'ngramsCode' in args.features:
 if 'topLabels' in args.features:
     TopLabelCountsFeature.load_labels_from_file(args.top_labels_labels)
 
+if 'NER' in args.features:
+    if args.NER_code_unigrams:
+      NER_code_range = (1,1)
+    else:
+      NER_code_range = (1,2)
+    if args.NER_code_vocab and MyVectorizer==CountVectorizer:
+        NERFeature.load_vocabulary_from_file(args.NER_code_vocab)
+    NERFeature.set_vectorizer(NER_code_range, args.NER_code_binarize, cutoff=args.NER_code_cutoff, vectorizer_type=MyVectorizer)
+
 
 X = None
 for feature in args.features:
@@ -109,5 +124,9 @@ if BigramFeatureCode.vocabulary != None and not args.ngrams_code_vocab and MyVec
     with open(args.out_file + '.code.vocab.json', 'wb') as f:
         json.dump(BigramFeatureCode.vocabulary, f)
 
+if NERFeature.vocabulary != None and not args.NER_code_vocab and MyVectorizer==CountVectorizer:
+    logging.info('dumping code vocabulary to disk')
+    with open(args.out_file + '.NER.vocab.json', 'wb') as f:
+        json.dump(NERFeature.vocabulary, f)
 
 save_sparse_csr(args.out_file + '.X', csr_matrix(X))

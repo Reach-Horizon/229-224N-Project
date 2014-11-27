@@ -3,12 +3,15 @@ from collections import Counter
 import numpy as np
 import re
 from string import punctuation
+import nltk
+
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
 
 from sklearn.feature_extraction.text import CountVectorizer, HashingVectorizer
-from nltk import word_tokenize
+from nltk import word_tokenize, sent_tokenize, pos_tag
+from nltk.chunk import ne_chunk
 from util.common import extract_code_sections
 
 tag_re = '[' + punctuation.replace('#', '').replace('+', '').replace('_', '').replace('-', '') + '0-9]+'
@@ -21,6 +24,7 @@ def tokenizer(s):
 class TopLabelCountsFeature(object):
 
     labels = None
+    titleBodyRatio = 7
 
     @classmethod
     def load_labels_from_file(cls, label_file):
@@ -37,7 +41,6 @@ class TopLabelCountsFeature(object):
             if row_idx % 10000 == 0:
                 logging.info('processed %s examples' % row_idx)
             code, noncode = extract_code_sections(example.data['body'])
-
             tokens = tokenizer(noncode + " " + example.data['title'])
             seen_labels = [word.lower() for word in tokens if word.lower() in cls.labels]
             counter = Counter(seen_labels)
@@ -50,7 +53,80 @@ class TopLabelCountsFeature(object):
         return X
 
 
+class NERFeature(object):
+    vocabulary = None
+    vectorizer = None
 
+    @classmethod
+    def load_vocabulary_from_file(cls, vocab_file):
+        with open(vocab_file) as f:
+            cls.vocabulary = json.load(f)
+
+    @classmethod
+    def set_vectorizer(cls, ngram_range=(1,1), binary=True, stop_words='english', lowercase=True, cutoff=1, vectorizer_type=CountVectorizer):
+        if vectorizer_type == CountVectorizer:
+            cls.vectorizer = CountVectorizer(ngram_range=ngram_range,
+                                             binary=binary,
+                                             stop_words='english',
+                                             lowercase=True,
+                                             min_df=cutoff,
+                                             vocabulary=cls.vocabulary,
+                                             tokenizer=tokenizer,
+                                             token_pattern=r"\b\w+\b")
+        else:
+            cls.vectorizer = HashingVectorizer(ngram_range=ngram_range,
+                                               binary=binary,
+                                               stop_words='english',
+                                               lowercase=True,
+                                               tokenizer=tokenizer,
+                                               token_pattern=r"\b\w+\b",
+                                               non_negative=True)
+
+    @staticmethod
+    def extractNE(tree):
+        return [' '.join([y[0] for y in x.leaves()]) for x in tree.subtrees() if x.label() == "NE"]
+
+    @classmethod
+    def extract_all(cls, examples):
+        row_idx = 0
+        documents = []
+        for example in examples:
+            if row_idx % 10000 == 0:
+                logging.info('Processed %d examples', row_idx)
+            title = example.data['title']
+            code, noncode = extract_code_sections(example.data['body'])
+            sentences = sent_tokenize(noncode + " " + title)
+            posTags = nltk.pos_tag(word_tokenize(sentences))
+            chunks = ne_chunk(posTags, binary=True)
+            namedEntities = NERFeature.extractNE(chunks) #extracted named entities for an example
+
+            documents += [namedEntities]
+            row_idx += 1
+
+        logging.info('Vectorizing named entities')
+        if cls.vocabulary or isinstance(cls.vectorizer, HashingVectorizer):
+            X = cls.vectorizer.transform(documents)
+        else:
+            X = cls.vectorizer.fit_transform(documents)
+            cls.vocabulary = cls.vectorizer.vocabulary_
+        return X
+
+    @classmethod
+    def extract_vocabulary(cls, examples):
+        assert cls.vectorizer, 'cannot extract features without vectorizer'
+
+        documents = []
+        for example in examples:
+            title = example.data['title']
+            code, noncode = extract_code_sections(example.data['body'])
+            sentences = sent_tokenize(noncode + " " + title) #all sentences to be considered
+            posTags = nltk.pos_tag(word_tokenize(sentences))
+            chunks = ne_chunk(posTags, binary=True)
+            namedEntities = NERFeature.extractNE(chunks) #extracted named entities for an example
+            documents += [namedEntities]
+
+        cls.vectorizer.fit(documents)
+        return cls.vectorizer.vocabulary_
 
 class BigramFeature(object):
 

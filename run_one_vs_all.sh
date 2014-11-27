@@ -7,8 +7,8 @@ tune_hyper=0
 features='topLabels ngramsTitle ngrams' # choose between ngrams, ngramsTitle, ngramsCode, topLabels
 
 # Data collection
-top_labels=100 #how many labels to predict?
-min_count=1000 #how many examples per label at least?
+top_labels=20 #how many labels to predict?
+min_count=20 #how many examples per label at least?
 
 test_fraction=0.15 #how much to use for test
 val_fraction=0.15 #how much to use for tuning
@@ -45,6 +45,9 @@ then
   --ngrams_code_binarize \
   --ngrams_code_cutoff $cutoff \
   --vectorizer_type $vectorizer_type \
+  --NER_code_unigrams \
+  --NER_code_binarize \
+  --NER_code_cutoff 1\
   experiments/${prefix}.train.bz2 \
   experiments/${prefix}.train \
   $features
@@ -63,6 +66,10 @@ then
   --ngrams_code_cutoff $cutoff \
   --ngrams_code_vocab experiments/${prefix}.train.code.vocab.json \
   --vectorizer_type $vectorizer_type \
+  --NER_code_unigrams \
+  --NER_code_binarize \
+  --NER_code_cutoff 1\
+  --NER_code_vocab experiments/${prefix}.train.NER.code.vocab.json \
     experiments/${prefix}.val.bz2 \
   experiments/${prefix}.val \
   $features
@@ -79,6 +86,10 @@ then
   --ngrams_code_cutoff $cutoff \
   --ngrams_code_vocab experiments/${prefix}.train.code.vocab.json \
   --vectorizer_type $vectorizer_type \
+  --NER_code_unigrams \
+  --NER_code_binarize \
+  --NER_code_cutoff 1 \
+  --NER_code_vocab experiments/${prefix}.train.NER.code.vocab.json \
   experiments/${prefix}.test.bz2 \
   experiments/${prefix}.test \
   $features
