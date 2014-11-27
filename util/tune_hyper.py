@@ -72,14 +72,17 @@ for k in range(0, Ytrain.shape[1], 5):
                 ('tfidf', TfidfTransformer(use_idf=True, norm='l2')),
             ])),
             ('label', Pipeline([
-                ('counts', LabelCountsExtractor(ngram_range=(1,1))),
-                ('kbest', SelectKBest(chi2)),
-                ('tfidf', TfidfTransformer()),
+                ('counts', LabelCountsExtractor(
+                    ngram_range=(1,1),
+                    binary=True,
+                )),
+                ('kbest', SelectKBest(chi2, k=10000)),
+                ('tfidf', TfidfTransformer(use_idf=True, norm='l2')),
             ])),
         ])),
-        # ('densifier', DenseMatrixTransformer()),
-        # ('pca', PCA(n_components=200)),
-        ('clf', LogisticRegression(C=100, class_weight='auto')),
+        ('densifier', DenseMatrixTransformer()),
+        ('pca', PCA()),
+        ('clf', SVC(class_weight='auto', verbose=1)),
     ])
 
     parameters = {
@@ -103,12 +106,13 @@ for k in range(0, Ytrain.shape[1], 5):
         # 'ngrams__pygment__kbest__k': (50, 200, 400),
         # 'ngrams__pygment__tfidf__use_idf': (True, False),
         # 'ngrams__pygment__tfidf__norm': ('l1', 'l2'),
-        'ngrams__label__counts__binary': (True, False),
-        'ngrams__label__kbest__k': (100, 1000, 10000),
-        'ngrams__label__tfidf__use_idf': (True, False),
-        'ngrams__label__tfidf__norm': ('l1', 'l2'),
-        # 'pca__n_components': (100, 300, 600),
-        # 'clf__C': 10. ** np.arange(1, 4),
+        # 'ngrams__label__counts__binary': (True, False),
+        # 'ngrams__label__kbest__k': (100, 1000, 10000),
+        # 'ngrams__label__tfidf__use_idf': (True, False),
+        # 'ngrams__label__tfidf__norm': ('l1', 'l2'),
+        'pca__n_components': (30, 100, 300, 1000),
+        'clf__C': 10. ** np.arange(1, 4),
+        'clf__gamma': 10. ** np.arange(-2, 1),
     }
 
     searcher = RandomizedSearchCV(pipeline, parameters, n_jobs=args.parallel, verbose=1, n_iter=200)
