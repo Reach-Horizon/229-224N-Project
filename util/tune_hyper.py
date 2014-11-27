@@ -43,12 +43,12 @@ for k in range(0, Ytrain.shape[1], 5):
                     max_df=1.0,
                     max_features=100000,
                 )),
-                # ('kbest', SelectKBest(chi2)),
+                ('kbest', SelectKBest(chi2)),
                 ('tfidf', TfidfTransformer(use_idf=True, norm='l2')),
             ])),
             ('body', Pipeline([
                 ('counts', BodyNgramsExtractor(ngram_range=(1,1))),
-                # ('kbest', SelectKBest(chi2)),
+                ('kbest', SelectKBest(chi2)),
                 ('tfidf', TfidfTransformer()),
             ])),
             # ('code', Pipeline([

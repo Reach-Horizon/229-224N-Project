@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-split_data=1
+split_data=0
 tune_hyper=1
 
 # Data collection
