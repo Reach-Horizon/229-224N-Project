@@ -4,3 +4,5 @@ class DenseMatrixTransformer(BaseEstimator, TransformerMixin):
         return self
     def transform(self, X, y=None):
         return X.todense()
+
+
