@@ -17,7 +17,7 @@ def tokenizer(s):
     return tag_re.sub(' ', s).split()
 
 default = {
-    'input':u'content', 'encoding':u'utf-8', 'charset':None, 'decode_error':u'strict', 'charset_error':None, 'strip_accents':None, 'lowercase':True, 'preprocessor':None, 'tokenizer':None, 'stop_words':None, 'token_pattern':u'(?u)\b\w\w+\b', 'ngram_range':(1, 1), 'analyzer':u'word', 'max_df':1.0, 'min_df':1, 'max_features':None, 'vocabulary':None, 'binary':False, 'dtype':np.int64
+    'input':'content', 'encoding':'utf-8', 'charset':None, 'decode_error':'strict', 'charset_error':None, 'strip_accents':None, 'lowercase':True, 'preprocessor':None, 'tokenizer':None, 'stop_words':None, 'token_pattern':'(?u)\b\w\w+\b', 'ngram_range':(1, 1), 'analyzer':'word', 'max_df':1.0, 'min_df':1, 'max_features':None, 'vocabulary':None, 'binary':False, 'dtype':np.int64
 }
 
 def get_params(new):
