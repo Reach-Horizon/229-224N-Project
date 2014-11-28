@@ -3,8 +3,8 @@ import os, sys, json
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
 
-from features.extractors import BigramFeature, BigramFeatureCode, BigramFeatureTitle, TopLabelCountsFeature
-
+from features.extractors import BigramFeature, BigramFeatureCode, BigramFeatureTitle, TopLabelCountsFeature, NERFeature
+from sklearn.feature_extraction.text import CountVectorizer, HashingVectorizer
 import os, sys
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -81,3 +81,11 @@ assert_equals(1, X[1, vocab['sys']])
 assert_equals(1, X[1, vocab['import']])
 
 print '<passed> BigramFeatureCode'
+
+NERFeature.set_vectorizer(ngram_range=(1,1), binary=False, stop_words='english', lowercase=True, cutoff=0)
+vocab = NERFeature.extract_vocabulary(examples)
+
+X = NERFeature.extract_all(examples)
+print 'X: ', X
+print 'vocab', NERFeature.vectorizer.vocabulary_
+print '<passed> NERFeature'

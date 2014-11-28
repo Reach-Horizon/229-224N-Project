@@ -96,10 +96,10 @@ class NERFeature(object):
             title = example.data['title']
             code, noncode = extract_code_sections(example.data['body'])
             sentences = sent_tokenize(noncode + " " + title)
-            posTags = nltk.pos_tag(word_tokenize(sentences))
-            chunks = ne_chunk(posTags, binary=True)
-            namedEntities = NERFeature.extractNE(chunks) #extracted named entities for an example
-
+            posTags = []
+            for sent in sentences:
+                posTags += nltk.pos_tag(word_tokenize(sent))
+            namedEntities = ' '.join(NERFeature.extractNE(ne_chunk(posTags, binary=True))) #extracted named entities for an example
             documents += [namedEntities]
             row_idx += 1
 
@@ -120,9 +120,12 @@ class NERFeature(object):
             title = example.data['title']
             code, noncode = extract_code_sections(example.data['body'])
             sentences = sent_tokenize(noncode + " " + title) #all sentences to be considered
-            posTags = nltk.pos_tag(word_tokenize(sentences))
+            posTags = []
+            for sent in sentences:
+                posTags += nltk.pos_tag(word_tokenize(sent))
+            #posTags = nltk.pos_tag(word_tokenize(sentences))
             chunks = ne_chunk(posTags, binary=True)
-            namedEntities = NERFeature.extractNE(chunks) #extracted named entities for an example
+            namedEntities = ' '.join(NERFeature.extractNE(chunks)) #extracted named entities for an example
             documents += [namedEntities]
 
         cls.vectorizer.fit(documents)

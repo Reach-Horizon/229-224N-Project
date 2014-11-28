@@ -40,15 +40,14 @@ parser.add_argument('--ngrams_code_cutoff', type=int, help='words that occur les
 parser.add_argument('--ngrams_code_vocab', help='vocabulary file for use with bigram feature', default=None)
 parser.add_argument('--top_labels_labels', help='labels file for use with top labels feature', default=None)
 parser.add_argument('--vectorizer_type', help='can be [count, hashing]. Default=count', default='count')
-parser.add_argument('features', metavar='Features', type=str, nargs='+',
-                   help='Choose between ' + str(supported_features.keys()))
 parser.add_argument('--NER_code_unigrams', action='store_true', help='use only unigrams instead', default=False)
 parser.add_argument('--NER_code_binarize', action='store_true', help='use only binary indicators for features instead of real counts', default=False)
 parser.add_argument('--NER_code_cutoff', type=int, help='words that occur less than this number of times will be ignored. Default=2', default=2)
 parser.add_argument('--NER_code_vocab', help='vocabulary file for use with bigram feature', default=None)
+parser.add_argument('features', metavar='Features', type=str, nargs='+',
+                   help='Choose between ' + str(supported_features.keys()))
 args = parser.parse_args()
 
-print 'NER CUTOFF ', args.NER_code_cutoff
 unsupported_features = set(args.features) - set(supported_features.keys())
 assert len(unsupported_features) == 0, 'do not support features ' + str(unsupported_features)
 
@@ -102,6 +101,7 @@ if 'NER' in args.features:
 
 X = None
 for feature in args.features:
+    logging.warning('FEATURE %s supported', feature)
     examples_generator = DataStreamer.load_from_bz2(args.subsampled_bz2)
     extractor = supported_features[feature]
     if X == None:

@@ -4,6 +4,7 @@ from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 from sklearn.svm import LinearSVC
+from sklearn.svm import SVC
 import argparse, os, sys
 from time import time
 from pprint import pprint
@@ -43,6 +44,7 @@ for k in range(Ytrain.shape[1]):
         ('tfidf', TfidfTransformer(use_idf=False, norm='l1')),
         ('densifier', DenseMatrixTransformer()),
         ('pca', PCA(n_components=500)),
+        #('clf', SVC(gamma=0.1, C=1000)),
         ('clf', LinearSVC(C=1000)),
     ])
 
