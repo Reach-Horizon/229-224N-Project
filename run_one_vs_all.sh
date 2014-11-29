@@ -4,18 +4,19 @@ split_data=1
 extract_features=1
 tune_hyper=0
 
-features='topLabels ngramsTitle ngrams' # choose between ngrams, ngramsTitle, ngramsCode, topLabels
+features='ngrams' # choose between ngrams, ngramsTitle, ngramsCode, topLabels, NER
+unigramfeatures='ngrams'
 
 # Data collection
 top_labels=20 #how many labels to predict?
-min_count=20 #how many examples per label at least?
+min_count=100 #how many examples per label at least?
 
 test_fraction=0.15 #how much to use for test
 val_fraction=0.15 #how much to use for tuning
 
 # Feature extraction
 cutoff=10 #frequency cutoff for rare ngrams
-vectorizer_type=hashing
+vectorizer_type=count
 
 prefix=top${top_labels}min${min_count}
 
@@ -103,11 +104,12 @@ then
 	experiments/${prefix}.train.Y \
 	experiments/tuning/${prefix}.tuned \
 	--parallel 10
-else
-    echo "training/testing for each class"
-    python util/train_test.py \
-	experiments/${prefix}.train.X \
-	experiments/${prefix}.train.Y \
-	experiments/${prefix}.val.X \
-	experiments/${prefix}.val.Y
 fi
+#else
+    #echo "training/testing for each class"
+    #python util/train_test.py \
+	#experiments/${prefix}.train.X \
+	#experiments/${prefix}.train.Y \
+	#experiments/${prefix}.val.X \
+	#experiments/${prefix}.val.Y
+#fi

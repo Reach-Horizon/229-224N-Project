@@ -4,6 +4,7 @@ import numpy as np
 import re
 from string import punctuation
 import nltk
+from gensim.models import LsiModel
 
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -13,6 +14,7 @@ from sklearn.feature_extraction.text import CountVectorizer, HashingVectorizer
 from nltk import word_tokenize, sent_tokenize, pos_tag
 from nltk.chunk import ne_chunk
 from util.common import extract_code_sections
+from util import common
 
 tag_re = '[' + punctuation.replace('#', '').replace('+', '').replace('_', '').replace('-', '') + '0-9]+'
 tag_re = re.compile(tag_re)
@@ -130,6 +132,39 @@ class NERFeature(object):
 
         cls.vectorizer.fit(documents)
         return cls.vectorizer.vocabulary_
+
+class LSIFeature(object):
+    """Latent semantic analysis feature for topic modelling of posts.
+    Must run in two passes: 1) to generate LSI model file 2) to generate features"""
+    vocabulary_dict = None
+    vectorizer = None
+    numTopics = 0
+    modelFile = None
+
+    @classmethod
+    def setNumTopics(cls, num_topics):
+        numTopics = num_topics
+
+    @classmethod
+    def load_vocabulary_from_file(cls, vocab_file):
+        #Must invert vocab file to get id 2
+        vocab = None
+        with open(vocab_file) as f:
+            vocab = json.load(f)
+        cls.vocabulary_dict = {id: word for word, id in vocab.items()}
+
+    @classmethod
+    def generate_model(cls, doc_file, outfile):
+        corpus = os.path.join(root_dir, 'experiments', doc_file)
+        Xmat = common.load_sparse_csr(corpus)
+        model = LsiModel(Xmat.transpose(), id2word=cls.vocabulary_dict, num_topics=20)
+        out_file = os.path.join(root_dir, 'experiments', outfile)
+        model.save(out_file)
+        modelFile = out_file #save name of model file
+
+    @classmethod
+    def extract_all(cls, examples):
+        pass    
 
 class BigramFeature(object):
 
