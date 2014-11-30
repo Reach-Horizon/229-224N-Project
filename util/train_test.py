@@ -4,6 +4,8 @@ from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 from sklearn.linear_model import LogisticRegression
+from sklearn.multiclass import OneVsRestClassifier
+
 from sklearn.svm import SVC, LinearSVC
 import argparse, os, sys
 from time import time
@@ -21,62 +23,57 @@ parser.add_argument('trainExamplesZip', type = str, help = 'bz2 file for trainin
 parser.add_argument('trainLabels', type = str, help = 'labels file for training pipeline')
 parser.add_argument('testExamplesZip', type = str, help = 'bz2 file for test examples')
 parser.add_argument('testLabels', type = str, help = 'labels file for training pipeline')
+parser.add_argument('--n_jobs', type = int, default=10, help = 'how many jobs to run in parallel. Default=10')
 args = parser.parse_args()
 
 print 'loading datasets'
-Ytrain = load_sparse_csr(args.trainLabels).todense()
-Ytest = load_sparse_csr(args.testLabels).todense()
+
+examples = [e for e in DataStreamer.load_from_bz2(args.trainExamplesZip)]
+Y = load_sparse_csr(args.trainLabels).todense()
 
 train_scores = []
 test_scores = []
 
-for k in range(Ytrain.shape[1]):
-    train_examples_generator = DataStreamer.load_from_bz2(args.trainExamplesZip)
-    test_examples_generator = DataStreamer.load_from_bz2(args.testExamplesZip)
+pipeline = Pipeline([
+    ('ngrams', FeatureUnion([
+        ('title', TitleNgramsExtractor()),
+        ('body', BodyNgramsExtractor()),
+        ('code', CodeNgramsExtractor()),
+        ('label', LabelCountsExtractor()),
+        ('pygment', PygmentExtractor()),
+    ])),
+    ('clf', OneVsRestClassifier(LogisticRegression(C=10), n_jobs=args.n_jobs)),
+])
 
-    print("Training class %s ..." % k)
+print("pipeline:", [name for name, _ in pipeline.steps])
+pipeline.fit(examples, Y)
+Ypred = pipeline.predict(examples)
+scores = {
+    'precision': precision_score(Y, Ypred),
+    'recall': recall_score(Y, Ypred),
+    'f1': f1_score(Y, Ypred)
+}
 
-    # get training examples
-    examples, Y = get_dataset_for_class(k, train_examples_generator, Ytrain, fair_sampling=False, restrict_sample_size=1000)
+t0 = time()
+print("done in %0.3fs" % (time() - t0))
+print("Train score")
+pprint(scores)
 
-    pipeline = Pipeline([
-        ('ngrams', FeatureUnion([
-            ('title', TitleNgramsExtractor()),
-            ('body', BodyNgramsExtractor()),
-            ('code', CodeNgramsExtractor()),
-            ('label', LabelCountsExtractor()),
-            ('pygment', PygmentExtractor()),
-        ])),
-        ('clf', LinearSVC(C=10)),
-    ])
+train_scores += [scores]
 
-    print("pipeline:", [name for name, _ in pipeline.steps])
-    pipeline.fit(examples, Y)
-    Ypred = pipeline.predict(examples)
-    scores = {
-        'precision': precision_score(Y, Ypred),
-        'recall': recall_score(Y, Ypred),
-        'f1': f1_score(Y, Ypred)
-    }
+examples = [e for e in DataStreamer.load_from_bz2(args.testExamplesZip)]
+Y = load_sparse_csr(args.testLabels).todense()
 
-    t0 = time()
-    print("done in %0.3fs" % (time() - t0))
-    print("Train score")
-    pprint(scores)
+Ypred = pipeline.predict(examples)
+scores = {
+    'precision': precision_score(Y, Ypred),
+    'recall': recall_score(Y, Ypred),
+    'f1': f1_score(Y, Ypred)
+}
+print("Test score:")
+pprint(scores)
 
-    train_scores += [scores]
-
-    examples, Y = get_dataset_for_class(k, test_examples_generator, Ytest, fair_sampling=False)
-    Ypred = pipeline.predict(examples)
-    scores = {
-        'precision': precision_score(Y, Ypred),
-        'recall': recall_score(Y, Ypred),
-        'f1': f1_score(Y, Ypred)
-    }
-    print("Test score:")
-    pprint(scores)
-
-    test_scores += [scores]
+test_scores += [scores]
 
 train_ave = {
     'accuracy': np.mean([d['accuracy'] for d in train_scores]),
