@@ -32,13 +32,10 @@ X = load_sparse_csr(args.trainFeatures)
 Y = load_sparse_csr(args.trainLabels).todense()
 
 pipeline = Pipeline([
-    ('densifier', DenseMatrixTransformer()),
-    ('pca', PCA()),
     ('clf', OneVsRestClassifier(LogisticRegression(class_weight='auto'))),
 ])
 
 parameters = {
-    'pca__n_components': (30, 100, 300, 1000),
     'clf__estimator__C': 10. ** np.arange(1, 4),
     #'clf__gamma': 10. ** np.arange(-2, 1),
 }
