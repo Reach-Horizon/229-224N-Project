@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-split_data=1
-tune_hyper=1
+split_data=0
+tune_hyper=0
 
 # Data collection
 top_labels=100 #how many labels to predict?

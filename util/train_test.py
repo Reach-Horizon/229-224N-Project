@@ -4,7 +4,7 @@ from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
+from sklearn.svm import SVC, LinearSVC
 import argparse, os, sys
 from time import time
 from pprint import pprint
@@ -47,7 +47,7 @@ for k in range(Ytrain.shape[1]):
             ('label', LabelCountsExtractor()),
             ('pygment', PygmentExtractor()),
         ])),
-        ('clf', LogisticRegression()),
+        ('clf', LinearSVC(C=10)),
     ])
 
     print("pipeline:", [name for name, _ in pipeline.steps])
@@ -81,15 +81,15 @@ for k in range(Ytrain.shape[1]):
 train_ave = {
     'accuracy': np.mean([d['accuracy'] for d in train_scores]),
     'precision': np.mean([d['precision'] for d in train_scores]),
-    'recall': np.mean([d['precision'] for d in train_scores]),
-    'f1': np.mean([d['precision'] for d in train_scores]),
+    'recall': np.mean([d['recall'] for d in train_scores]),
+    'f1': np.mean([d['f1'] for d in train_scores]),
 }
 
 test_ave = {
     'accuracy': np.mean([d['accuracy'] for d in test_scores]),
     'precision': np.mean([d['precision'] for d in test_scores]),
-    'recall': np.mean([d['precision'] for d in test_scores]),
-    'f1': np.mean([d['precision'] for d in test_scores]),
+    'recall': np.mean([d['recall'] for d in test_scores]),
+    'f1': np.mean([d['f1'] for d in test_scores]),
 }
 
 print 'Train average:'
