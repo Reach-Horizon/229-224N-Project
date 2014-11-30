@@ -25,19 +25,22 @@ then
   python util/extract_labels.py experiments/${prefix}.test.bz2 experiments/${prefix}.labels.counts.json experiments/${prefix}.test.Y
 fi
 
+python util/extract_features.py experiments/${prefix}.train.bz2 experiments/${prefix}.train.Y experiments/${prefix}.val.bz2 experiments/${prefix}
+
+
 if [ $tune_hyper -eq 1 ]
 then
     echo "doing hyperparameter tuning for each class"
     python util/tune_hyper.py \
-	experiments/${prefix}.train.bz2 \
+	experiments/${prefix}.train.X \
 	experiments/${prefix}.train.Y \
 	experiments/tuning/${prefix}.tuned \
 	--parallel 10
 else
     echo "training/testing for each class"
     python util/train_test.py \
-	experiments/${prefix}.train.bz2 \
+	experiments/${prefix}.train.X \
 	experiments/${prefix}.train.Y \
-	experiments/${prefix}.val.bz2 \
+	experiments/${prefix}.val.X \
 	experiments/${prefix}.val.Y
 fi

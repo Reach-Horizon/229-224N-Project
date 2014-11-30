@@ -19,35 +19,28 @@ from util.DataStreamer import DataStreamer
 from features.extractors import *
 
 parser = argparse.ArgumentParser(description = 'does hyperparameter tuning')
-parser.add_argument('trainExamplesZip', type = str, help = 'bz2 file for training examples')
+parser.add_argument('trainFeatures', type = str, help = 'sparse X matrix')
 parser.add_argument('trainLabels', type = str, help = 'labels file for training pipeline')
-parser.add_argument('testExamplesZip', type = str, help = 'bz2 file for test examples')
+parser.add_argument('testFeatures', type = str, help = 'sparse X matrix')
 parser.add_argument('testLabels', type = str, help = 'labels file for training pipeline')
 parser.add_argument('--n_jobs', type = int, default=10, help = 'how many jobs to run in parallel. Default=10')
 args = parser.parse_args()
 
 print 'loading datasets'
 
-examples = [e for e in DataStreamer.load_from_bz2(args.trainExamplesZip)]
+X = load_sparse_csr(args.trainFeatures)
 Y = load_sparse_csr(args.trainLabels).todense()
 
 train_scores = []
 test_scores = []
 
 pipeline = Pipeline([
-    ('ngrams', FeatureUnion([
-        ('title', TitleNgramsExtractor()),
-        ('body', BodyNgramsExtractor()),
-        ('code', CodeNgramsExtractor()),
-        ('label', LabelCountsExtractor()),
-        ('pygment', PygmentExtractor()),
-    ])),
     ('clf', OneVsRestClassifier(LogisticRegression(C=10), n_jobs=args.n_jobs)),
 ])
 
 print("pipeline:", [name for name, _ in pipeline.steps])
-pipeline.fit(examples, Y)
-Ypred = pipeline.predict(examples)
+pipeline.fit(X, Y)
+Ypred = pipeline.predict(X)
 scores = {
     'precision': precision_score(Y, Ypred),
     'recall': recall_score(Y, Ypred),
@@ -61,10 +54,10 @@ pprint(scores)
 
 train_scores += [scores]
 
-examples = [e for e in DataStreamer.load_from_bz2(args.testExamplesZip)]
+X = load_sparse_csr(args.testFeatures)
 Y = load_sparse_csr(args.testLabels).todense()
 
-Ypred = pipeline.predict(examples)
+Ypred = pipeline.predict(X)
 scores = {
     'precision': precision_score(Y, Ypred),
     'recall': recall_score(Y, Ypred),
