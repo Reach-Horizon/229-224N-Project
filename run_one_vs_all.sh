@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 split_data=0
+extract_features=0
 tune_hyper=0
 
 # Data collection
@@ -25,8 +26,11 @@ then
   python util/extract_labels.py experiments/${prefix}.test.bz2 experiments/${prefix}.labels.counts.json experiments/${prefix}.test.Y
 fi
 
-python util/extract_features.py experiments/${prefix}.train.bz2 experiments/${prefix}.train.Y experiments/${prefix}.val.bz2 experiments/${prefix}
 
+if [ $extract_features -eq 1 ]
+then
+  python util/extract_features.py experiments/${prefix}.train.bz2 experiments/${prefix}.train.Y experiments/${prefix}.val.bz2 experiments/${prefix}
+fi
 
 if [ $tune_hyper -eq 1 ]
 then
