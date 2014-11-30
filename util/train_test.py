@@ -69,14 +69,12 @@ pprint(scores)
 test_scores += [scores]
 
 train_ave = {
-    'accuracy': np.mean([d['accuracy'] for d in train_scores]),
     'precision': np.mean([d['precision'] for d in train_scores]),
     'recall': np.mean([d['recall'] for d in train_scores]),
     'f1': np.mean([d['f1'] for d in train_scores]),
 }
 
 test_ave = {
-    'accuracy': np.mean([d['accuracy'] for d in test_scores]),
     'precision': np.mean([d['precision'] for d in test_scores]),
     'recall': np.mean([d['recall'] for d in test_scores]),
     'f1': np.mean([d['f1'] for d in test_scores]),
