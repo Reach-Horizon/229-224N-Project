@@ -5,6 +5,7 @@ import re
 from string import punctuation
 import nltk
 from gensim.models import LsiModel
+from scipy.sparse import csr_matrix
 
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -135,19 +136,23 @@ class NERFeature(object):
 
 class LSIFeature(object):
     """Latent semantic analysis feature for topic modelling of posts.
-    Must run in two passes: 1) to generate LSI model file 2) to generate features"""
+    Must run in two passes: 1) to generate vocabulary 2) to generate model and features
+
+
+    TODO: 1st pass generate vocabulary and model. Second pass vectorize examples again and feed into
+    model to extract similarity values"""
     vocabulary_dict = None
-    vectorizer = None
-    numTopics = 0
-    modelFile = None
+    vectorizer = None #May not actually need to store vectorizer
+    num_topics = 0
+    model_file = None
 
     @classmethod
-    def setNumTopics(cls, num_topics):
-        numTopics = num_topics
+    def set_num_topics(cls, num_topics):
+        cls.num_topics = num_topics
 
     @classmethod
     def load_vocabulary_from_file(cls, vocab_file):
-        #Must invert vocab file to get id 2
+        #Must invert vocab file to get id 2 word mapping for model generation
         vocab = None
         with open(vocab_file) as f:
             vocab = json.load(f)
@@ -155,16 +160,53 @@ class LSIFeature(object):
 
     @classmethod
     def generate_model(cls, doc_file, outfile):
+        assert cls.vocabulary_dict is not None, "Must specify id2word mapping"
+        assert cls.vectorizer, 'cannot extract features without vectorizer'
+
         corpus = os.path.join(root_dir, 'experiments', doc_file)
         Xmat = common.load_sparse_csr(corpus)
         model = LsiModel(Xmat.transpose(), id2word=cls.vocabulary_dict, num_topics=20)
         out_file = os.path.join(root_dir, 'experiments', outfile)
         model.save(out_file)
-        modelFile = out_file #save name of model file
+        cls.model_file = out_file #save name of model file
 
     @classmethod
     def extract_all(cls, examples):
-        pass    
+        # row_idx = 0
+        # for example in examples:
+        #     #Load model file
+        #     corpus = os.path.join(root_dir, 'experiments', doc_file)
+        #     Xmat = common.load_sparse_csr(corpus)
+        #     lsi = LsiModel.load(cls.out_file)
+        #     if row_idx % 10000 == 0:
+        #         logging.info('processed %s examples' % row_idx)
+        #
+        #     row_idx += 1
+        documents = [] #Need to vectorize documents with count vectorizer
+        row_idx = 0
+        for example in examples:
+            if row_idx % 10000 == 0:
+                logging.info('processed %s examples' % row_idx)
+            code, noncode = extract_code_sections(example.data['body'])
+            documents += [noncode]
+            row_idx += 1
+
+        logging.info('vectorizing documents')
+        if cls.vocabulary or isinstance(cls.vectorizer, HashingVectorizer):
+            X = cls.vectorizer.transform(documents)
+        else:
+            X = cls.vectorizer.fit_transform(documents)
+
+        lsi = LsiModel.load(cls.model_file)
+        num_docs, num_features = X.shape
+        X_similarity = np.zeros((num_docs,cls.num_topics), dtype=np.float32)
+        for doc in range(num_docs):
+            doc_dict = {(feat_num,1) for feat_num in range(num_features) if X[doc, feat_num] == 1} #convert doc to appropriate representation
+            topic_similarity = lsi[doc_dict]
+            for topic in range(len(topic_similarity)):
+                X_similarity[doc, topic] = topic_similarity[topic][1] #populate feature vector with topic similarity value
+        return X_similarity
+
 
 class BigramFeature(object):
 
