@@ -3,7 +3,7 @@ from sklearn.decomposition import PCA
 from sklearn.grid_search import GridSearchCV, RandomizedSearchCV
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.svm import SVC
+from sklearn.svm import SVC, LinearSVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
@@ -32,12 +32,13 @@ X = load_sparse_csr(args.trainFeatures)
 Y = load_sparse_csr(args.trainLabels).todense()
 
 pipeline = Pipeline([
-    ('clf', OneVsRestClassifier(LogisticRegression(class_weight='auto'))),
+    ('clf', OneVsRestClassifier(LinearSVC(class_weight='auto', verbose=True))),
 ])
 
 parameters = {
     'clf__estimator__C': 10. ** np.arange(1, 4),
-    #'clf__gamma': 10. ** np.arange(-2, 1),
+    'clf__gamma': 10. ** np.arange(-2, 1),
+    'clf__penalty': ('l1', 'l2'),
 }
 
 searcher = GridSearchCV(pipeline, parameters, score_func=f1_score, n_jobs=args.parallel, verbose=1)

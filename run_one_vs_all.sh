@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-split_data=0
+split_data=1
 extract_features=1
 tune_hyper=0
 

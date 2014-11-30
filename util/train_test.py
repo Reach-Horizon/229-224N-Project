@@ -23,7 +23,6 @@ parser.add_argument('trainFeatures', type = str, help = 'sparse X matrix')
 parser.add_argument('trainLabels', type = str, help = 'labels file for training pipeline')
 parser.add_argument('testFeatures', type = str, help = 'sparse X matrix')
 parser.add_argument('testLabels', type = str, help = 'labels file for training pipeline')
-parser.add_argument('--n_jobs', type = int, default=10, help = 'how many jobs to run in parallel. Default=10')
 args = parser.parse_args()
 
 print 'loading datasets'
@@ -34,13 +33,11 @@ Y = load_sparse_csr(args.trainLabels).todense()
 train_scores = []
 test_scores = []
 
-pipeline = Pipeline([
-    ('clf', OneVsRestClassifier(LogisticRegression(C=10), n_jobs=args.n_jobs)),
-])
+clf = OneVsRestClassifier(LogisticRegression(class_weight='auto', C=10))
 
 print("pipeline:", [name for name, _ in pipeline.steps])
-pipeline.fit(X, Y)
-Ypred = pipeline.predict(X)
+clf.fit(X)
+Ypred = clf.predict(X)
 scores = {
     'precision': precision_score(Y, Ypred),
     'recall': recall_score(Y, Ypred),
@@ -57,7 +54,7 @@ train_scores += [scores]
 X = load_sparse_csr(args.testFeatures)
 Y = load_sparse_csr(args.testLabels).todense()
 
-Ypred = pipeline.predict(X)
+Ypred = clf.predict(X)
 scores = {
     'precision': precision_score(Y, Ypred),
     'recall': recall_score(Y, Ypred),
