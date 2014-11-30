@@ -6,6 +6,7 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.svm import SVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import f1_score
 import argparse, os, sys
 import numpy as np
 import cPickle as pickle
@@ -42,7 +43,7 @@ parameters = {
     #'clf__gamma': 10. ** np.arange(-2, 1),
 }
 
-searcher = GridSearchCV(pipeline, parameters, n_jobs=args.parallel, verbose=1)
+searcher = GridSearchCV(pipeline, parameters, score_func=f1_score, n_jobs=args.parallel, verbose=1)
 
 print(searcher)
 print("pipeline:", [name for name, _ in pipeline.steps])
