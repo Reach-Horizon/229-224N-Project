@@ -9,7 +9,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.cross_validation import KFold
 from sklearn.metrics import f1_score
-from scipy.stats import randint
 import argparse, os, sys
 import numpy as np
 import cPickle as pickle
@@ -40,9 +39,9 @@ pipeline = Pipeline([
 
 parameters = {
     "clf__estimator__max_depth": [3, None],
-    "clf__estimator__max_features": randint(1, 11),
-    "clf__estimator__min_samples_split": randint(1, 11),
-    "clf__estimator__min_samples_leaf": randint(1, 11),
+    "clf__estimator__max_features": range(1, 11),
+    "clf__estimator__min_samples_split": range(1, 11),
+    "clf__estimator__min_samples_leaf": range(1, 11),
     "clf__estimator__bootstrap": [True, False],
     "clf__estimator__criterion": ["gini", "entropy"],
 }
