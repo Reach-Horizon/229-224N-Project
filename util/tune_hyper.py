@@ -35,16 +35,16 @@ X = load_sparse_csr(args.trainFeatures)
 Y = load_sparse_csr(args.trainLabels, dtype=np.uint8).toarray()
 
 pipeline = Pipeline([
-    ('clf', RandomForestClassifier(n_estimators=30, min_samples_leaf=6, min_samples_split=6)),
+    ('clf', OneVsRestClassifier(RandomForestClassifier(), n_jobs=args.parallel)),
 ])
 
 parameters = {
-    "max_depth": [3, None],
-    "max_features": randint(1, 11),
-    "min_samples_split": randint(1, 11),
-    "min_samples_leaf": randint(1, 11),
-    "bootstrap": [True, False],
-    "criterion": ["gini", "entropy"],
+    "clf__estimator__max_depth": [3, None],
+    "clf__estimator__max_features": randint(1, 11),
+    "clf__estimator__min_samples_split": randint(1, 11),
+    "clf__estimator__min_samples_leaf": randint(1, 11),
+    "clf__estimator__bootstrap": [True, False],
+    "clf__estimator__criterion": ["gini", "entropy"],
 }
 
 searcher = GridSearchCV(pipeline, parameters, score_func=f1_score, n_jobs=args.parallel, verbose=1, cv=KFold(X.shape[0])) #default StratifiedKFold doesn't work with multiclass classification
