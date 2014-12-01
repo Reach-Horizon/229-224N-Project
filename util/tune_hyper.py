@@ -46,7 +46,7 @@ parameters = {
     "clf__estimator__criterion": ["gini", "entropy"],
 }
 
-searcher = GridSearchCV(pipeline, parameters, score_func=make_scorer(f1_score), n_jobs=args.parallel, verbose=1, cv=KFold(X.shape[0])) #default StratifiedKFold doesn't work with multiclass classification
+searcher = RandomizedSearchCV(pipeline, parameters, scoring=make_scorer(f1_score), n_jobs=args.parallel, verbose=1, cv=KFold(X.shape[0]), n_iter=10) #default StratifiedKFold doesn't work with multiclass classification
 
 print(searcher)
 print("pipeline:", [name for name, _ in pipeline.steps])
