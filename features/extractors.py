@@ -15,7 +15,7 @@ from sklearn.feature_extraction.text import CountVectorizer, HashingVectorizer
 from nltk import word_tokenize, sent_tokenize, pos_tag
 from nltk.chunk import ne_chunk
 from util.common import extract_code_sections
-from util import common
+from util import common, DataStreamer
 
 tag_re = '[' + punctuation.replace('#', '').replace('+', '').replace('_', '').replace('-', '') + '0-9]+'
 tag_re = re.compile(tag_re)
@@ -142,13 +142,10 @@ class LSIFeature(object):
     TODO: 1st pass generate vocabulary and model. Second pass vectorize examples again and feed into
     model to extract similarity values"""
     vocabulary_dict = None
+    vocabulary = None
     vectorizer = None #May not actually need to store vectorizer
     num_topics = 0
     model_file = None
-
-    @classmethod
-    def set_num_topics(cls, num_topics):
-        cls.num_topics = num_topics
 
     @classmethod
     def load_vocabulary_from_file(cls, vocab_file):
@@ -159,29 +156,60 @@ class LSIFeature(object):
         cls.vocabulary_dict = {id: word for word, id in vocab.items()}
 
     @classmethod
-    def generate_model(cls, doc_file, outfile):
-        assert cls.vocabulary_dict is not None, "Must specify id2word mapping"
+    def set_vectorizer(cls, LSI_range=(1,1), binary=True, stop_words='english', lowercase=True, cutoff=1, vectorizer_type=CountVectorizer):
+        if vectorizer_type == CountVectorizer:
+            cls.vectorizer = CountVectorizer(ngram_range=LSI_range,
+                                             binary=binary,
+                                             stop_words='english',
+                                             lowercase=True,
+                                             min_df=cutoff,
+                                             vocabulary=cls.vocabulary,
+                                             tokenizer=tokenizer,
+                                             token_pattern=r"\b\w+\b")
+        else:
+            cls.vectorizer = HashingVectorizer(ngram_range=LSI_range,
+                                               binary=binary,
+                                               stop_words='english',
+                                               lowercase=True,
+                                               tokenizer=tokenizer,
+                                               token_pattern=r"\b\w+\b",
+                                               non_negative=True)
+
+    @classmethod
+    def generate_model(cls, docs_file, num_topics, outfile):
         assert cls.vectorizer, 'cannot extract features without vectorizer'
 
-        corpus = os.path.join(root_dir, 'experiments', doc_file)
-        Xmat = common.load_sparse_csr(corpus)
-        model = LsiModel(Xmat.transpose(), id2word=cls.vocabulary_dict, num_topics=20)
+        cls.num_topics = num_topics
+
+        vocabulary = None
+        corpus = os.path.join(root_dir, 'experiments', docs_file)
+        examples_generator = DataStreamer.load_from_bz2(corpus) #Load data streamer examples generator
+
+        documents = [] #Need to vectorize documents with count vectorizer
+        row_idx = 0
+        for example in examples_generator:
+            if row_idx % 10000 == 0:
+                logging.info('processed %s examples' % row_idx)
+            code, noncode = extract_code_sections(example.data['body'])
+            documents += [noncode]
+            row_idx += 1
+
+        logging.info('vectorizing documents')
+        if cls.vocabulary or isinstance(cls.vectorizer, HashingVectorizer):
+            X = cls.vectorizer.transform(documents)
+        else:
+            X = cls.vectorizer.fit_transform(documents)
+            cls.vocabulary = cls.vectorizer.vocabulary_
+
+        cls.vocabulary_dict = {id: word for word, id in cls.vocabulary.items()} #extract id2word mapping
+
+        model = LsiModel(X.transpose(), id2word=cls.vocabulary_dict, cls.num_topics) #generate model
         out_file = os.path.join(root_dir, 'experiments', outfile)
         model.save(out_file)
         cls.model_file = out_file #save name of model file
 
     @classmethod
     def extract_all(cls, examples):
-        # row_idx = 0
-        # for example in examples:
-        #     #Load model file
-        #     corpus = os.path.join(root_dir, 'experiments', doc_file)
-        #     Xmat = common.load_sparse_csr(corpus)
-        #     lsi = LsiModel.load(cls.out_file)
-        #     if row_idx % 10000 == 0:
-        #         logging.info('processed %s examples' % row_idx)
-        #
-        #     row_idx += 1
         documents = [] #Need to vectorize documents with count vectorizer
         row_idx = 0
         for example in examples:

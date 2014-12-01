@@ -18,6 +18,7 @@ val_fraction=0.15 #how much to use for tuning
 cutoff=10 #frequency cutoff for rare ngrams
 vectorizer_type=count
 
+lsi_model_name=lsi
 prefix=top${top_labels}min${min_count}
 
 mkdir experiments
@@ -35,7 +36,7 @@ fi
 if [ $extract_features -eq 1 ]
 then
   echo "extracting features"
-  # the first time will produce a vocab file
+  # the first time will produce a vocab file and any necessary model files
   python util/extract_features.py \
   --top_labels_labels experiments/${prefix}.labels.counts.json \
   --ngrams_unigrams \
@@ -49,6 +50,12 @@ then
   --NER_code_unigrams \
   --NER_code_binarize \
   --NER_code_cutoff 1\
+  --LSI_num_topics 20\
+  --LSI_unigrams \
+  --LSI_binarize \
+  --LSI_cutoff 1\
+  --LSI_gen_model \
+  --LSI_model_name $lsi_model_name \
   experiments/${prefix}.train.bz2 \
   experiments/${prefix}.train \
   $features
@@ -70,7 +77,13 @@ then
   --NER_code_unigrams \
   --NER_code_binarize \
   --NER_code_cutoff 1\
-  --NER_code_vocab experiments/${prefix}.train.NER.code.vocab.json \
+  --NER_code_vocab experiments/${prefix}.train.NER.vocab.json \
+  --LSI_num_topics 20\
+  --LSI_unigrams \
+  --LSI_binarize \
+  --LSI_cutoff 1\
+  --LSI_vocab experiments/${prefix}.train.LSI.vocab.json \
+  --LSI_model_name $lsi_model_name \
     experiments/${prefix}.val.bz2 \
   experiments/${prefix}.val \
   $features
@@ -90,7 +103,12 @@ then
   --NER_code_unigrams \
   --NER_code_binarize \
   --NER_code_cutoff 1 \
-  --NER_code_vocab experiments/${prefix}.train.NER.code.vocab.json \
+  --NER_code_vocab experiments/${prefix}.train.NER.vocab.json \
+  --LSI_num_topics 20\
+  --LSI_unigrams \
+  --LSI_binarize \
+  --LSI_cutoff 1\
+  --LSI_vocab experiments/${prefix}.train.LSI.vocab.json \
   experiments/${prefix}.test.bz2 \
   experiments/${prefix}.test \
   $features

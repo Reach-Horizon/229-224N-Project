@@ -7,7 +7,7 @@ root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
 
 from util.DataStreamer import DataStreamer
-from features.extractors import BigramFeature, TopLabelCountsFeature, BigramFeatureTitle, BigramFeatureCode, NERFeature
+from features.extractors import BigramFeature, TopLabelCountsFeature, BigramFeatureTitle, BigramFeatureCode, NERFeature, LSIFeature
 from util.common import save_sparse_csr, load_sparse_csr
 
 import argparse
@@ -18,6 +18,7 @@ supported_features = {
     'ngramsCode':BigramFeatureCode,
     'topLabels':TopLabelCountsFeature,
     'NER': NERFeature,
+    'LSI': LSIFeature,
     # add more feature extractors here
     }
 
@@ -45,6 +46,12 @@ parser.add_argument('--NER_code_binarize', action='store_true', help='use only b
 parser.add_argument('--NER_code_cutoff', type=int, help='words that occur less than this number of times will be ignored. Default=2', default=2)
 parser.add_argument('--NER_code_vocab', help='vocabulary file for use with bigram feature', default=None)
 parser.add_argument('--LSI_num_topics', help='specify number of topics to extract from docs', type=int, default=20)
+parser.add_argument('--LSI_unigrams', action='store_true', help='use only unigrams instead', default=True)
+parser.add_argument('--LSI_binarize', action='store_true', help='use only binary indicators for features instead of real counts', default=False)
+parser.add_argument('--LSI_cutoff', type=int, help='words that occur less than this number of times will be ignored. Default=2', default=2)
+parser.add_argument('--LSI_vocab', help='vocabulary file for use with unigram feature', default=None)
+parser.add_argument('--LSI_gen_model', action='store_true', help='vocabulary file for use with unigram feature', default=False) #stores whether we need to generate a model
+parser.add_argument('--LSI_model_name', type=str, help='lsi model output file name', default=None)
 parser.add_argument('features', metavar='Features', type=str, nargs='+',
                    help='Choose between ' + str(supported_features.keys()))
 args = parser.parse_args()
@@ -99,6 +106,16 @@ if 'NER' in args.features:
         NERFeature.load_vocabulary_from_file(args.NER_code_vocab)
     NERFeature.set_vectorizer(NER_code_range, args.NER_code_binarize, cutoff=args.NER_code_cutoff, vectorizer_type=MyVectorizer)
 
+if 'LSI' in args.features:
+    if args.LSI_code_unigrams:
+      LSI_range = (1,1)
+    else:
+      LSI_range = (1,2)
+    LSIFeature.set_vectorizer(LSI_range, args.LSI_binarize, cutoff=args.LSI_cutoff, vectorizer_type=MyVectorizer)
+    if args.LSI_gen_model:
+        LSIFeature.generate_model(args.subsampled_bz2, args.LSI_num_topics, args.LSI_model_name)
+    if args.LSI_code_vocab and MyVectorizer==CountVectorizer:
+        LSIFeature.load_vocabulary_from_file(args.LSI_code_vocab)
 
 X = None
 for feature in args.features:
@@ -129,5 +146,10 @@ if NERFeature.vocabulary != None and not args.NER_code_vocab and MyVectorizer==C
     logging.info('dumping code vocabulary to disk')
     with open(args.out_file + '.NER.vocab.json', 'wb') as f:
         json.dump(NERFeature.vocabulary, f)
+
+if LSIFeature.vocabulary != None and not args.LSI_code_vocab and MyVectorizer==CountVectorizer:
+    logging.info('dumping code vocabulary to disk')
+    with open(args.out_file + '.LSI.vocab.json', 'wb') as f:
+        json.dump(LSIFeature.vocabulary, f)
 
 save_sparse_csr(args.out_file + '.X', csr_matrix(X))
