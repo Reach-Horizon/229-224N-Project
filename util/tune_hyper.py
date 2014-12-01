@@ -6,8 +6,10 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.svm import SVC, LinearSVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.cross_validation import KFold
 from sklearn.metrics import f1_score
+from scipy.stats import randint
 import argparse, os, sys
 import numpy as np
 import cPickle as pickle
@@ -33,13 +35,16 @@ X = load_sparse_csr(args.trainFeatures)
 Y = load_sparse_csr(args.trainLabels, dtype=np.uint8).toarray()
 
 pipeline = Pipeline([
-    ('clf', OneVsRestClassifier(LinearSVC(class_weight='auto', verbose=False))),
+    ('clf', RandomForestClassifier(n_estimators=30, min_samples_leaf=6, min_samples_split=6)),
 ])
 
 parameters = {
-    'clf__estimator__C': 10. ** np.arange(1, 4),
-    #'clf__gamma': 10. ** np.arange(-2, 1),
-    'clf__estimator__loss': ('l1', 'l2'),
+    "max_depth": [3, None],
+    "max_features": randint(1, 11),
+    "min_samples_split": randint(1, 11),
+    "min_samples_leaf": randint(1, 11),
+    "bootstrap": [True, False],
+    "criterion": ["gini", "entropy"],
 }
 
 searcher = GridSearchCV(pipeline, parameters, score_func=f1_score, n_jobs=args.parallel, verbose=1, cv=KFold(X.shape[0])) #default StratifiedKFold doesn't work with multiclass classification
