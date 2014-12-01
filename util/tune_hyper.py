@@ -34,7 +34,7 @@ X = load_sparse_csr(args.trainFeatures)
 Y = load_sparse_csr(args.trainLabels, dtype=np.uint8).toarray()
 
 pipeline = Pipeline([
-    ('densifier', DenseMatrixTransformer),
+    ('densifier', DenseMatrixTransformer()),
     ('clf', OneVsRestClassifier(RandomForestClassifier(), n_jobs=args.parallel)),
 ])
 
