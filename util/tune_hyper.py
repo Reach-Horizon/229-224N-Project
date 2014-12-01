@@ -6,6 +6,7 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.svm import SVC, LinearSVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.cross_validation import KFold
 from sklearn.metrics import f1_score
 import argparse, os, sys
 import numpy as np
@@ -29,19 +30,19 @@ args = parser.parse_args()
 
 
 X = load_sparse_csr(args.trainFeatures)
-Y = load_sparse_csr(args.trainLabels).todense()
+Y = load_sparse_csr(args.trainLabels, dtype=np.uint8).toarray()
 
 pipeline = Pipeline([
-    ('clf', OneVsRestClassifier(LinearSVC(class_weight='auto', verbose=True))),
+    ('clf', OneVsRestClassifier(LinearSVC(class_weight='auto', verbose=False))),
 ])
 
 parameters = {
     'clf__estimator__C': 10. ** np.arange(1, 4),
-    'clf__gamma': 10. ** np.arange(-2, 1),
-    'clf__penalty': ('l1', 'l2'),
+    #'clf__gamma': 10. ** np.arange(-2, 1),
+    'clf__estimator__loss': ('l1', 'l2'),
 }
 
-searcher = GridSearchCV(pipeline, parameters, score_func=f1_score, n_jobs=args.parallel, verbose=1)
+searcher = GridSearchCV(pipeline, parameters, score_func=f1_score, n_jobs=args.parallel, verbose=1, cv=KFold(X.shape[0])) #default StratifiedKFold doesn't work with multiclass classification
 
 print(searcher)
 print("pipeline:", [name for name, _ in pipeline.steps])

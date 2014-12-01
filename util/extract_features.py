@@ -40,23 +40,23 @@ feature_extractor = FeatureUnion([
         ('kbest', SelectKBest(chi2, k=100)),
         ('tfidf', TfidfTransformer(use_idf=False, norm='l1')),
     ])),
-    ('code', Pipeline([
-        ('counts', CodeNgramsExtractor(
-            ngram_range=(1,1),
-            binary=True,
-            max_df=0.5,
-        )),
-        ('kbest', SelectKBest(chi2, k=500)),
-        ('tfidf', TfidfTransformer(use_idf=True, norm='l2')),
-    ])),
-    ('pygment', Pipeline([
-        ('counts', PygmentExtractor(
-            ngram_range=(1,1),
-            binary=True,
-        )),
-        ('kbest', SelectKBest(chi2, k=50)),
-        ('tfidf', TfidfTransformer(use_idf=True, norm='l2')),
-    ])),
+    # ('code', Pipeline([
+    #     ('counts', CodeNgramsExtractor(
+    #         ngram_range=(1,1),
+    #         binary=True,
+    #         max_df=0.5,
+    #     )),
+    #     ('kbest', SelectKBest(chi2, k=500)),
+    #     ('tfidf', TfidfTransformer(use_idf=True, norm='l2')),
+    # ])),
+    # ('pygment', Pipeline([
+    #     ('counts', PygmentExtractor(
+    #         ngram_range=(1,1),
+    #         binary=True,
+    #     )),
+    #     ('kbest', SelectKBest(chi2, k=50)),
+    #     ('tfidf', TfidfTransformer(use_idf=True, norm='l2')),
+    # ])),
     ('label', Pipeline([
         ('counts', LabelCountsExtractor(
             ngram_range=(1,1),

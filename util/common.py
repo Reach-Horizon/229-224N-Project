@@ -19,7 +19,7 @@ def save_sparse_csr(filename, array):
     out_file.write(str(row) + "," + str(col) + "," + str(array[row, col]) + "\n")
   out_file.close()
 
-def load_sparse_csr(filename):
+def load_sparse_csr(filename, dtype=np.float64):
   row_indices = []
   col_indices = []
   data = []
@@ -33,14 +33,14 @@ def load_sparse_csr(filename):
       terms = line.strip("\n ").split(",")
       row_indices += [int(terms[0])]
       col_indices += [int(terms[1])]
-      data += [float(terms[2])]
+      data += [terms[2]]
   in_file.close()
 
   logging.info("loading (%s, %s) sparse matrix from %s" %(shape[0], shape[1], filename))
 
   row_indices = np.array(row_indices)
   col_indices = np.array(col_indices)
-  data = np.array(data)
+  data = np.array(data, dtype=dtype)
 
   mat = csr_matrix((data, (row_indices, col_indices)), shape=shape)
 

@@ -2,10 +2,10 @@
 
 split_data=1
 extract_features=1
-tune_hyper=0
+tune_hyper=1
 
 # Data collection
-top_labels=20 #how many labels to predict?
+top_labels=100 #how many labels to predict?
 min_count=500 #how many examples per label at least?
 
 test_fraction=0.15 #how much to use for test

@@ -19,25 +19,28 @@ from util.DataStreamer import DataStreamer
 from features.extractors import *
 
 parser = argparse.ArgumentParser(description = 'does hyperparameter tuning')
-parser.add_argument('trainFeatures', type = str, help = 'sparse X matrix')
-parser.add_argument('trainLabels', type = str, help = 'labels file for training pipeline')
-parser.add_argument('testFeatures', type = str, help = 'sparse X matrix')
-parser.add_argument('testLabels', type = str, help = 'labels file for training pipeline')
+parser.add_argument('trainFeatures', type = str, help = 'X file for training examples')
+parser.add_argument('trainLabels', type = str, help = 'Y file for training pipeline')
+parser.add_argument('testFeatures', type = str, help = 'X file for test examples')
+parser.add_argument('testLabels', type = str, help = 'Y file for training pipeline')
+parser.add_argument('--n_jobs', type = int, default=1, help = 'how many jobs to run in parallel. Default=10')
 args = parser.parse_args()
 
 print 'loading datasets'
 
 X = load_sparse_csr(args.trainFeatures)
-Y = load_sparse_csr(args.trainLabels).todense()
+Y = load_sparse_csr(args.trainLabels, dtype=np.uint8).toarray()
 
 train_scores = []
 test_scores = []
 
-clf = OneVsRestClassifier(LogisticRegression(class_weight='auto', C=10))
+pipeline = Pipeline([
+    ('clf', OneVsRestClassifier(LogisticRegression(class_weight='auto', C=10), n_jobs=args.n_jobs)),
+])
 
 print("pipeline:", [name for name, _ in pipeline.steps])
-clf.fit(X)
-Ypred = clf.predict(X)
+pipeline.fit(X, Y)
+Ypred = pipeline.predict(X)
 scores = {
     'precision': precision_score(Y, Ypred),
     'recall': recall_score(Y, Ypred),
@@ -52,9 +55,9 @@ pprint(scores)
 train_scores += [scores]
 
 X = load_sparse_csr(args.testFeatures)
-Y = load_sparse_csr(args.testLabels).todense()
+Y = load_sparse_csr(args.testLabels, dtype=np.uint8).toarray()
 
-Ypred = clf.predict(X)
+Ypred = pipeline.predict(X)
 scores = {
     'precision': precision_score(Y, Ypred),
     'recall': recall_score(Y, Ypred),
