@@ -90,12 +90,8 @@ parameters = {
     'ngrams__label__kbest__k': (100, 1000, 10000),
     'ngrams__label__tfidf__use_idf': (True, False),
     'ngrams__label__tfidf__norm': ('l1', 'l2'),
-    "clf__estimator__max_depth": [3, None],
-    "clf__estimator__max_features": randint(1, 11),
-    "clf__estimator__min_samples_split": randint(1, 11),
-    "clf__estimator__min_samples_leaf": randint(1, 11),
-    "clf__estimator__bootstrap": [True, False],
-    "clf__estimator__criterion": ["gini", "entropy"],
+    "clf__estimator__C": [10, 100, 1000],
+    "clf__estimator__loss": ['l1', 'l2'],
 }
 
 searcher = RandomizedSearchCV(pipeline, parameters, scoring = make_scorer(f1_score), n_jobs=args.parallel, verbose=1, cv=KFold(len(examples)), n_iter=200) #default StratifiedKFold doesn't work with multiclass classification

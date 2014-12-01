@@ -5,6 +5,7 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.multiclass import OneVsRestClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 from sklearn.svm import SVC, LinearSVC
 import argparse, os, sys
@@ -35,7 +36,7 @@ train_scores = []
 test_scores = []
 
 pipeline = Pipeline([
-    ('clf', OneVsRestClassifier(LogisticRegression(class_weight='auto', C=10), n_jobs=args.n_jobs)),
+    ('clf', OneVsRestClassifier(RandomForestClassifier(n_estimators=30, min_samples_leaf=6, min_samples_split=6, criterion='entropy'), n_jobs=args.n_jobs)),
 ])
 
 print("pipeline:", [name for name, _ in pipeline.steps])
