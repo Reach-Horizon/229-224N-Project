@@ -19,6 +19,8 @@ from util.common import load_sparse_csr, get_dataset_for_class
 from util.DataStreamer import DataStreamer
 from features.extractors import *
 
+import cPickle as pickle
+
 parser = argparse.ArgumentParser(description = 'does hyperparameter tuning')
 parser.add_argument('trainFeatures', type = str, help = 'X file for training examples')
 parser.add_argument('trainLabels', type = str, help = 'Y file for training pipeline')
@@ -36,7 +38,7 @@ train_scores = []
 test_scores = []
 
 pipeline = Pipeline([
-    ('clf', OneVsRestClassifier(RandomForestClassifier(n_estimators=30, min_samples_leaf=6, min_samples_split=6, criterion='entropy'), n_jobs=args.n_jobs)),
+    ('clf', OneVsRestClassifier(LogisticRegression(C=10), n_jobs=args.n_jobs)),
 ])
 
 print("pipeline:", [name for name, _ in pipeline.steps])
@@ -54,6 +56,14 @@ print("Train score")
 pprint(scores)
 
 train_scores += [scores]
+
+with open('train.pkl', 'wb') as f:
+    pickle.dump((Y, Ypred), f)
+
+
+
+
+
 
 X = load_sparse_csr(args.testFeatures)
 Y = load_sparse_csr(args.testLabels, dtype=np.uint8).toarray()
@@ -86,3 +96,6 @@ pprint(train_ave)
 
 print 'Test average'
 pprint(test_ave)
+
+with open('test.pkl', 'wb') as f:
+    pickle.dump((Y, Ypred), f)
