@@ -3,6 +3,7 @@
 split_data=1
 extract_features=1
 tune_hyper=1
+num_parallel=10 #how many processes to run in parallel when tuning
 
 # Data collection
 top_labels=100 #how many labels to predict?
@@ -39,12 +40,13 @@ then
 	experiments/${prefix}.train.X \
 	experiments/${prefix}.train.Y \
 	experiments/tuning/${prefix}.tuned \
-	--parallel 10
+	--n_jobs $num_parallel
 else
     echo "training/testing for each class"
     python util/train_test.py \
 	experiments/${prefix}.train.X \
 	experiments/${prefix}.train.Y \
 	experiments/${prefix}.val.X \
-	experiments/${prefix}.val.Y
+	experiments/${prefix}.val.Y \
+	--n_jobs $num_parallel
 fi

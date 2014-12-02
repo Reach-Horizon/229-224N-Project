@@ -24,7 +24,7 @@ from features.extractors import *
 from features.transformers import DenseMatrixTransformer
 
 parser = argparse.ArgumentParser(description = 'does hyperparameter tuning')
-parser.add_argument('trainExamplesZip', type = str, help = 'features matrix for training examples')
+parser.add_argument('trainExamplesZip', type = str, help = 'bz2 examples for training examples')
 parser.add_argument('trainLabels', type = str, help = 'labels file for training pipeline')
 parser.add_argument('out_file', help='where to store the best settings (json)')
 parser.add_argument('-p', '--parallel', type=int, help='the number of jobs to run in parallel. Default=1', default=10)
