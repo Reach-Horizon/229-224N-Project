@@ -193,3 +193,22 @@ class PygmentExtractor(ExampleNgramsVectorizerNoFit):
 
     def docs_from_examples(self, examples):
         return [example.data['body'] + "\n" + example.data['title'] for example in examples]
+
+
+class ManualCountExtractor(object):
+
+    def __init__(self, candidates=['.net', '&lt']):
+        self.candidates = candidates
+
+    def transform(self, examples):
+        X = np.zeros((len(examples), len(self.candidates)))
+        for idx_x, example in enumerate(examples):
+            for idx_y, candidate in enumerate(self.candidates):
+                X[idx_x, idx_y] = example.data['body'].lower().count(candidate)
+        return X
+
+    def fit(self, examples, y=None, **fit_params):
+        return self
+
+    def fit_transform(self, examples, y=None, **fit_transform_params):
+        return self.transform(examples)
