@@ -10,6 +10,7 @@ sys.path.append(root_dir)
 
 from test.scaffold import examples, mapping, assert_equals
 from features.extractors import *
+from util.DataStreamer import Example
 
 
 
@@ -96,3 +97,16 @@ assert_equals(1, X[1, extractor.vocabulary_['import']])
 print '<passed> BigramFeatureCode'
 
 
+
+
+
+manual_examples = [
+    Example({'title': 'why does sklearn Suck so Much???', 'body': 'I used to write all of my homework in .NET, but after Windows crashed, I have not been able to use .net as I once was <pre>&lt;css rocks&gr;</pre>', 'tags':['.net', 'html', 'windows']})
+]
+extractor = ManualCountExtractor()
+X = extractor.fit_transform(manual_examples)
+
+assert_equals(2, X[0,0])
+assert_equals(1, X[0,1])
+
+print '<passed> ManualCount'
