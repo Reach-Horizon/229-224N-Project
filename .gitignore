@@ -10,3 +10,4 @@ sample_data/
 *.pickle
 *.bz2
 experiments/
+*pkl

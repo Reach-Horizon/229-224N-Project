@@ -3,6 +3,7 @@ from collections import Counter
 import numpy as np
 import re
 from string import punctuation
+from sklearn.base import TransformerMixin, BaseEstimator
 
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
@@ -195,16 +196,21 @@ class PygmentExtractor(ExampleNgramsVectorizerNoFit):
         return [example.data['body'] + "\n" + example.data['title'] for example in examples]
 
 
-class ManualCountExtractor(object):
+class ManualCountExtractor(BaseEstimator, TransformerMixin):
 
-    def __init__(self, candidates=['.net', '&lt']):
+    def __init__(self, candidates=['.net', '&lt'], binary=False):
         self.candidates = candidates
-
+        self.binary = binary
+        
     def transform(self, examples):
         X = np.zeros((len(examples), len(self.candidates)))
         for idx_x, example in enumerate(examples):
             for idx_y, candidate in enumerate(self.candidates):
-                X[idx_x, idx_y] = example.data['body'].lower().count(candidate)
+                if self.binary:
+                    update = 1 if candidate in example.data['body'].lower() else 0
+                else:
+                    update = example.data['body'].lower().count(candidate)
+                X[idx_x, idx_y] = update
         return X
 
     def fit(self, examples, y=None, **fit_params):

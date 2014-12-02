@@ -60,6 +60,7 @@ pipeline = Pipeline([
             ('counts', LabelCountsExtractor(binary=True)),
             ('tfidf', TfidfTransformer(use_idf=True)),
         ])),
+        ('manual', ManualCountExtractor())
     ])),
     ('clf', OneVsRestClassifier(LinearSVC(class_weight='auto', loss='l1', C=5), n_jobs=args.parallel)),
 ])
@@ -83,6 +84,7 @@ parameters = {
     #'ngrams__label__counts__binary': (True, False),
     #'ngrams__label__kbest__k': (100, 1000, 'all'),
     #'ngrams__label__tfidf__use_idf': (True, False),
+    'ngrams__manual__binary': (True, False),
     #"clf__estimator__C": range(1, 31),
     #"clf__estimator__loss": ('l1', 'l2'),
 }
