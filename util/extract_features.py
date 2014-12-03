@@ -23,47 +23,35 @@ args = parser.parse_args()
 
 feature_extractor = FeatureUnion([
     ('title', Pipeline([
-        ('counts', TitleNgramsExtractor(
-            ngram_range=(1,1),
-            binary=True,
-            max_df=1.0,
-        )),
+        ('counts', TitleNgramsExtractor(binary=True)),
+        ('tfidf', TfidfTransformer(norm='l2', use_idf=True)),
         ('kbest', SelectKBest(chi2, k=100)),
-        ('tfidf', TfidfTransformer(use_idf=True, norm='l2')),
-    ])),
+        ])),
     ('body', Pipeline([
-        ('counts', BodyNgramsExtractor(
-            ngram_range=(1,1),
-            binary=False,
-            max_df=1.0,
-        )),
-        ('kbest', SelectKBest(chi2, k=100)),
-        ('tfidf', TfidfTransformer(use_idf=False, norm='l1')),
-    ])),
-    # ('code', Pipeline([
-    #     ('counts', CodeNgramsExtractor(
-    #         ngram_range=(1,1),
-    #         binary=True,
-    #         max_df=0.5,
-    #     )),
-    #     ('kbest', SelectKBest(chi2, k=500)),
-    #     ('tfidf', TfidfTransformer(use_idf=True, norm='l2')),
-    # ])),
-    # ('pygment', Pipeline([
-    #     ('counts', PygmentExtractor(
-    #         ngram_range=(1,1),
-    #         binary=True,
-    #     )),
-    #     ('kbest', SelectKBest(chi2, k=50)),
-    #     ('tfidf', TfidfTransformer(use_idf=True, norm='l2')),
-    # ])),
-    ('label', Pipeline([
-        ('counts', LabelCountsExtractor(
-            ngram_range=(1,1),
-            binary=True,
-        )),
-        ('kbest', SelectKBest(chi2, k=10000)),
+        ('counts', BodyNgramsExtractor(binary=False)),
         ('tfidf', TfidfTransformer(use_idf=True, norm='l2')),
+        ('kbest', SelectKBest(chi2, k=1000)),
+    ])),
+    #('code', Pipeline([
+    #    ('counts', CodeNgramsExtractor()),
+    #    ('tfidf', TfidfTransformer()),
+    #    ('kbest', SelectKBest(chi2)),
+    #])),
+    ('pygment', Pipeline([
+        ('counts', PygmentExtractor(binary=True)),
+        ('tfidf', TfidfTransformer(use_idf=True)),
+        ('kbest', SelectKBest(chi2, k=100)),
+    ])),
+    ('label', Pipeline([
+        ('counts', LabelCountsExtractor(binary=True)),
+        ('tfidf', TfidfTransformer(use_idf=True)),
+    ])),
+    ('manual', Pipeline([
+        ('counts', ManualCountExtractor(
+            candidates=['&lt', '&gt', '.net'],
+            binary=False)
+        ),
+        ('tfidf', TfidfTransformer(use_idf=False, norm='l1')),
     ])),
 ])
 
