@@ -196,20 +196,50 @@ class PygmentExtractor(ExampleNgramsVectorizerNoFit):
         return [example.data['body'] + "\n" + example.data['title'] for example in examples]
 
 
-class ManualCountExtractor(BaseEstimator, TransformerMixin):
+class ManualBernoulliExtractor(BaseEstimator, TransformerMixin):
 
-    def __init__(self, candidates=['.net', '&lt'], binary=False):
+    def __init__(self, candidates=['//'], code_only=False):
         self.candidates = candidates
-        self.binary = binary
+        self.code_only = code_only
         
     def transform(self, examples):
         X = np.zeros((len(examples), len(self.candidates)))
         for idx_x, example in enumerate(examples):
             for idx_y, candidate in enumerate(self.candidates):
-                if self.binary:
-                    update = 1 if candidate in example.data['body'].lower() else 0
+                if self.code_only:
+                    code, noncode = extract_code_sections(example.data['body'])
+                    target = code.lower()
                 else:
-                    update = example.data['body'].lower().count(candidate)
+                    target = example.data['body'].lower()
+                update = 1 if candidate in target else 0
+                X[idx_x, idx_y] = update
+        return X
+
+    def fit(self, examples, y=None, **fit_params):
+        return self
+
+    def fit_transform(self, examples, y=None, **fit_transform_params):
+        return self.transform(examples)
+
+
+
+
+class ManualMultinomialExtractor(BaseEstimator, TransformerMixin):
+
+    def __init__(self, candidates=['//'], code_only=False):
+        self.candidates = candidates
+        self.code_only = code_only
+        
+    def transform(self, examples):
+        X = np.zeros((len(examples), len(self.candidates)))
+        for idx_x, example in enumerate(examples):
+            for idx_y, candidate in enumerate(self.candidates):
+                if self.code_only:
+                    code, noncode = extract_code_sections(example.data['body'])
+                    target = code.lower()
+                else:
+                    target = example.data['body'].lower()
+                update = target.count(candidate)
                 X[idx_x, idx_y] = update
         return X
 

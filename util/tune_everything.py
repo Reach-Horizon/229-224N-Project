@@ -60,12 +60,15 @@ pipeline = Pipeline([
             ('counts', LabelCountsExtractor(binary=True)),
             ('tfidf', TfidfTransformer(use_idf=True)),
         ])),
-        ('manual', Pipeline([
-            ('counts', ManualCountExtractor()),
+        ('bernoulli', Pipeline([
+            ('counts', ManualBernoulliExtractor()),
+        ])),
+        ('multinomial', Pipeline([
+            ('counts', ManualBernoulliExtractor()),
             ('tfidf', TfidfTransformer()),
         ])),
     ])),
-    ('clf', OneVsRestClassifier(LinearSVC(class_weight='auto', loss='l1', C=5), n_jobs=args.parallel)),
+    ('clf', OneVsRestClassifier(LogisticRegression(class_weight='auto', C=10), n_jobs=args.parallel)),
 ])
 
 parameters = {
@@ -87,11 +90,14 @@ parameters = {
     #'ngrams__label__counts__binary': (True, False),
     #'ngrams__label__kbest__k': (100, 1000, 'all'),
     #'ngrams__label__tfidf__use_idf': (True, False),
-    'ngrams__manual__counts__candidates': (['&lt', '&gt', '.net'],
-                                           ['&lt', '&gt', '.net', '#']),
-    'ngrams__manual__counts__binary': (True, False),
-    'ngrams__manual__tfidf__use_idf': (True, False),
-    'ngrams__manual__tfidf__norm': ('l1', 'l2'),
+    'ngrams__bernoulli__counts__candidates': (['#', '/*', '//'],
+                                           ['/*']),
+    'ngrams__bernoulli__counts__code_only': (True, False),
+    'ngrams__multinomial__counts__candidates': (['&lt', '&gt', '.net'],
+                                           ['.net']),
+    'ngrams__multinomial__counts__code_only': (True, False),
+    'ngrams__multinomial__tfidf__use_idf': (True, False),
+    'ngrams__multinomial__tfidf__norm': ('l1', 'l2'),
     #"clf__estimator__C": range(1, 31),
     #"clf__estimator__loss": ('l1', 'l2'),
 }

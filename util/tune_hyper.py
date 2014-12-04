@@ -30,15 +30,16 @@ parser.add_argument('--n_jobs', type=int, help='the number of jobs to run in par
 args = parser.parse_args()
 
 
-X = load_sparse_csr(args.trainFeatures).toarray()
+X = load_sparse_csr(args.trainFeatures)
 Y = load_sparse_csr(args.trainLabels, dtype=np.uint8).toarray()
 
 pipeline = Pipeline([
-    ('clf', OneVsRestClassifier(LogisticRegression(), n_jobs=args.n_jobs)),
+    ('clf', OneVsRestClassifier(LinearSVC(), n_jobs=args.n_jobs)),
 ])
 
 parameters = {
-    "clf__estimator__C": [10, 100]
+    "clf__estimator__C": [30, 100, 300, 1000],
+    "clf__estimator__loss": ('l1', 'l2'),
     # "clf__estimator__max_depth": [3, None],
     # "clf__estimator__max_features": range(1, 11),
     # "clf__estimator__min_samples_split": range(1, 11),

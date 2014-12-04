@@ -38,7 +38,8 @@ train_scores = []
 test_scores = []
 
 pipeline = Pipeline([
-    ('clf', OneVsRestClassifier(LogisticRegression(C=10, class_weight='auto'), n_jobs=args.n_jobs)),
+    #('clf', OneVsRestClassifier(LogisticRegression(C=5000, class_weight='auto'), n_jobs=args.n_jobs)),
+    ('clf', OneVsRestClassifier(LinearSVC(C=30, loss='l1', class_weight='auto'), n_jobs=args.n_jobs)),
 ])
 
 print("pipeline:", [name for name, _ in pipeline.steps])

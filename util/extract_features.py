@@ -4,7 +4,7 @@ import os
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.feature_extraction.text import TfidfTransformer
-
+from sklearn.preprocessing import StandardScaler
 root_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.append(root_dir)
 
@@ -46,12 +46,22 @@ feature_extractor = FeatureUnion([
         ('counts', LabelCountsExtractor(binary=True)),
         ('tfidf', TfidfTransformer(use_idf=True)),
     ])),
-    ('manual', Pipeline([
-        ('counts', ManualCountExtractor(
-            candidates=['&lt', '&gt', '.net'],
-            binary=False)
-        ),
-        ('tfidf', TfidfTransformer(use_idf=False, norm='l1')),
+    ('bernoulli', Pipeline([
+        ('counts', ManualBernoulliExtractor(candidates=['c:', 'd:', '/*', '//', '#!', '\\'], code_only=False)),
+    ])),
+    ('multinomial', Pipeline([
+        ('counts', ManualBernoulliExtractor(candidates=[
+            '&lt', '&gt', '<', '>', '/>'
+            '.net',
+            '.h',
+            'public static',
+            '&ltpage', '&ltgrid', '&ltbool',
+            'windows.', 'system.', 'bing.',
+            '@implementation', '@class', '@property', '@interface', '@end', '@',
+            'class=', 'id=', 'class =', 'id =', 'vb.net', 'hkey_current', '.exe', 
+            '#import', 'foundation.h',
+            'nsobject', 'nsstring'], code_only=False)),
+        ('tfidf', TfidfTransformer(use_idf=True, norm='l2')),
     ])),
 ])
 
